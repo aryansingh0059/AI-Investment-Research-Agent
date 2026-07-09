@@ -43,14 +43,14 @@ export async function generateWithGemini(
         signal: AbortSignal.timeout(REQUEST_TIMEOUT * 4),
       });
 
-      if (res.status === 503) {
+      if (res.status === 503 || res.status === 429) {
         const waitMs = Math.pow(2, attempt) * 1000; // 2s, 4s, 8s
-        console.warn(`[Gemini] 503 on attempt ${attempt}/${MAX_RETRIES} — retrying in ${waitMs}ms`);
+        console.warn(`[Gemini] ${res.status} on attempt ${attempt}/${MAX_RETRIES} — retrying in ${waitMs}ms`);
         if (attempt < MAX_RETRIES) {
           await sleep(waitMs);
           continue;
         }
-        console.error('[Gemini] All retries exhausted on 503 — falling back to Groq');
+        console.error(`[Gemini] All retries exhausted on ${res.status} — falling back to Groq`);
         return null;
       }
 

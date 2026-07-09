@@ -22,7 +22,7 @@ import type {
 
 // ─── Singleton instance ─────────────────────────────────────────────────────
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const yf: any = new (YahooFinance as any)();
+const yf: any = new (YahooFinance as any)({ suppressNotices: ['yahooSurvey'] });
 
 // ─── Request-level in-memory cache ─────────────────────────────────────────
 // Keyed by `symbol:method` — avoids duplicate YF requests within one analysis run

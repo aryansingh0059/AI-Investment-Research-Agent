@@ -40,29 +40,7 @@ export async function companyResearchNode(
     ]);
     const finnhubLogoData: { logo?: string; exchange?: string } = finnhubLogoDataRaw;
 
-    // Resolve CEO via AI if not found in any API
-    let ceo: string | undefined;
-    if (!ceo) {
-      try {
-        const aiResult = await generateWithAI(
-          'You are a financial research assistant.',
-          `Return ONLY the current CEO name for "${yfProfile.name ?? state.company}" (ticker: ${symbol}). Return just the name as plain text. If unknown, return "Unknown".`,
-          0.1
-        );
-        if (aiResult?.text?.trim()) {
-          let cleaned = aiResult.text.trim().replace(/^[\"']|[\"']$/g, '');
-          if (cleaned.startsWith('{') || cleaned.includes('{')) {
-            try {
-              const parsed = cleanAndParseJSON<any>(cleaned);
-              cleaned = parsed.ceo || parsed.ceoName || parsed.name || cleaned;
-            } catch { /* noop */ }
-          }
-          if (cleaned && cleaned.toLowerCase() !== 'unknown') {
-            ceo = cleaned;
-          }
-        }
-      } catch { /* noop — CEO is optional */ }
-    }
+    const ceo: string | undefined = undefined;
 
     const companyProfile = {
       ...yfProfile,
