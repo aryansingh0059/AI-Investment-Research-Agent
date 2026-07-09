@@ -37,6 +37,8 @@ function buildFallbackSWOT(state: GraphState): SWOTAnalysis {
   return { strengths, weaknesses, opportunities, threats };
 }
 
+import { cleanAndParseJSON } from '@/lib/utils/json';
+
 /**
  * Node 8: SWOT Generator
  * Uses compact summary strings to reduce token usage.
@@ -63,7 +65,7 @@ export async function swotGeneratorNode(
 
     const aiResult = await generateWithAI(SYSTEM_PROMPT, prompt);
     if (aiResult) {
-      const parsed = JSON.parse(aiResult.text);
+      const parsed = cleanAndParseJSON<any>(aiResult.text);
       if (parsed.strengths && parsed.weaknesses && parsed.opportunities && parsed.threats) {
         console.log(`[Node] swotGenerator: used ${aiResult.provider}`);
         return { swot: parsed as SWOTAnalysis, errors: [...state.errors] };

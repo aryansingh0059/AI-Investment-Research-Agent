@@ -7,6 +7,7 @@ import {
 import { resolveSymbolFallback, getCompanyLogo } from '@/lib/services/finnhub';
 import { generateWithAI } from '@/lib/services/ai';
 import { formatCurrency, formatPercent } from '@/lib/utils/formatters';
+import { cleanAndParseJSON } from '@/lib/utils/json';
 
 /**
  * Node 1: Company Research
@@ -50,9 +51,9 @@ export async function companyResearchNode(
         );
         if (aiResult?.text?.trim()) {
           let cleaned = aiResult.text.trim().replace(/^[\"']|[\"']$/g, '');
-          if (cleaned.startsWith('{')) {
+          if (cleaned.startsWith('{') || cleaned.includes('{')) {
             try {
-              const parsed = JSON.parse(cleaned);
+              const parsed = cleanAndParseJSON<any>(cleaned);
               cleaned = parsed.ceo || parsed.ceoName || parsed.name || cleaned;
             } catch { /* noop */ }
           }

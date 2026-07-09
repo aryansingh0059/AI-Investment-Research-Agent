@@ -32,6 +32,8 @@ function buildFallbackGrowth(state: GraphState): GrowthFactor[] {
   return factors;
 }
 
+import { cleanAndParseJSON } from '@/lib/utils/json';
+
 /**
  * Node 7: Growth Analysis
  * Uses compact summary strings to reduce token usage.
@@ -52,7 +54,7 @@ export async function growthAnalysisNode(
 
     const aiResult = await generateWithAI(SYSTEM_PROMPT, prompt);
     if (aiResult) {
-      const parsed = JSON.parse(aiResult.text);
+      const parsed = cleanAndParseJSON<any>(aiResult.text);
       if (Array.isArray(parsed.growthFactors)) {
         console.log(`[Node] growthAnalysis: used ${aiResult.provider}`);
         return { growthFactors: parsed.growthFactors as GrowthFactor[], errors: [...state.errors] };

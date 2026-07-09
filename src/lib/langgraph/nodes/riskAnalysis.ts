@@ -32,6 +32,8 @@ function buildFallbackRisks(state: GraphState): RiskFactor[] {
   return risks;
 }
 
+import { cleanAndParseJSON } from '@/lib/utils/json';
+
 /**
  * Node 6: Risk Analysis
  * Uses compact summary strings to reduce token usage.
@@ -51,7 +53,7 @@ export async function riskAnalysisNode(
 
     const aiResult = await generateWithAI(SYSTEM_PROMPT, prompt);
     if (aiResult) {
-      const parsed = JSON.parse(aiResult.text);
+      const parsed = cleanAndParseJSON<any>(aiResult.text);
       if (Array.isArray(parsed.risks)) {
         console.log(`[Node] riskAnalysis: used ${aiResult.provider}`);
         return { risks: parsed.risks as RiskFactor[], errors: [...state.errors] };

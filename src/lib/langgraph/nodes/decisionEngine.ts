@@ -72,6 +72,8 @@ function calculateFallbackScores(state: GraphState): {
   };
 }
 
+import { cleanAndParseJSON } from '@/lib/utils/json';
+
 /**
  * Node 9: Decision Engine
  * Synthesizes all summaries and produces the final investment recommendation.
@@ -137,7 +139,7 @@ export async function decisionEngineNode(
 
     if (aiResult) {
       console.log(`[Node] decisionEngine: used ${aiResult.provider}`);
-      const parsed = JSON.parse(aiResult.text);
+      const parsed = cleanAndParseJSON<any>(aiResult.text);
       if (parsed.recommendation && parsed.investmentScore !== undefined) {
         return {
           recommendation: parsed.recommendation as RecommendationType,
