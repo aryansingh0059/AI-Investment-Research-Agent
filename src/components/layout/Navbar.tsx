@@ -59,21 +59,17 @@ export default function Navbar({ onLogoClick, status = 'idle' }: NavbarProps) {
             outline: 'none',
           }}
         >
-          <div
+          <img
+            src="/logo2.png"
+            alt="EquityLens"
             style={{
-              width: '28px',
-              height: '28px',
-              borderRadius: '6px',
-              background: 'var(--brand)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
+              height: '24px',
+              width: 'auto',
+              display: 'block',
             }}
-          >
-            <TrendingUp size={16} color="white" />
-          </div>
+          />
           <span style={{ fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-            AI <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>Investment Research</span>
+            Equity<span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>Lens</span>
           </span>
         </button>
 

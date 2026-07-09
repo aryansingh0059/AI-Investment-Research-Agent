@@ -2,18 +2,15 @@
 
 import { CheckCircle, Circle, Loader2 } from 'lucide-react';
 import type { AnalysisStep } from '@/types/recommendation';
-import { ANALYSIS_STEP_LABELS } from '@/constants';
 
-const ORDERED_STEPS: AnalysisStep[] = [
-  'company_research',
-  'financial_analysis',
-  'news_analysis',
-  'web_search',
-  'competitor_analysis',
-  'risk_analysis',
-  'growth_analysis',
-  'swot_generation',
-  'decision_engine',
+const LOADING_PIPELINE = [
+  { step: 'company_research', label: 'Identifying Company' },
+  { step: 'financial_analysis', label: 'Fetching Financial Statements' },
+  { step: 'news_analysis', label: 'Reading News' },
+  { step: 'web_search', label: 'Market Intelligence' },
+  { step: 'competitor_analysis', label: 'Competitor Analysis' },
+  { step: 'risk_analysis', label: 'Risk Assessment' },
+  { step: 'decision_engine', label: 'AI Decision Engine' },
 ];
 
 interface LoadingScreenProps {
@@ -38,9 +35,18 @@ export default function LoadingScreen({
   elapsedMs,
   company,
 }: LoadingScreenProps) {
-  const currentIdx = ORDERED_STEPS.indexOf(status);
-  const progress = currentIdx >= 0 ? ((currentIdx + 1) / ORDERED_STEPS.length) * 100 : 5;
   const completedSteps = new Set(steps.map((s) => s.step));
+
+  // Determine current active index in the pipeline mapping
+  let activeIdx = 0;
+  if (status === 'financial_analysis') activeIdx = 1;
+  else if (status === 'news_analysis') activeIdx = 2;
+  else if (status === 'web_search') activeIdx = 3;
+  else if (status === 'competitor_analysis') activeIdx = 4;
+  else if (status === 'risk_analysis' || status === 'growth_analysis' || status === 'swot_generation') activeIdx = 5;
+  else if (status === 'decision_engine') activeIdx = 6;
+
+  const progress = ((activeIdx + 1) / LOADING_PIPELINE.length) * 100;
 
   return (
     <main
@@ -56,7 +62,7 @@ export default function LoadingScreen({
     >
       <div
         style={{
-          maxWidth: '520px',
+          maxWidth: '480px',
           width: '100%',
           textAlign: 'center',
         }}
@@ -65,19 +71,19 @@ export default function LoadingScreen({
         {/* Sleek Terminal Header */}
         <div
           style={{
-            width: '48px',
-            height: '48px',
-            borderRadius: '8px',
+            width: '40px',
+            height: '40px',
+            borderRadius: '6px',
             background: 'var(--bg-surface)',
             border: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 24px',
+            margin: '0 auto 20px',
           }}
         >
           <Loader2
-            size={20}
+            size={18}
             color="var(--brand-light)"
             style={{ animation: 'spin 1.5s linear infinite' }}
           />
@@ -85,9 +91,9 @@ export default function LoadingScreen({
 
         <h2
           style={{
-            fontSize: '22px',
+            fontSize: '20px',
             fontWeight: 600,
-            marginBottom: '8px',
+            marginBottom: '4px',
             letterSpacing: '-0.02em',
           }}
         >
@@ -97,54 +103,32 @@ export default function LoadingScreen({
         <p
           style={{
             color: 'var(--text-secondary)',
-            marginBottom: '28px',
-            fontSize: '13px',
-            lineHeight: 1.5,
+            marginBottom: '24px',
+            fontSize: '12px',
           }}
         >
           {message}
         </p>
 
-        {/* Flat Progress Bar */}
-        <div className="progress-container" style={{ marginBottom: '8px' }}>
-          <div
-            className="progress-bar-fill"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            fontSize: '11px',
-            color: 'var(--text-muted)',
-            marginBottom: '24px',
-            fontFamily: 'var(--font-mono)',
-          }}
-        >
-          <span>{Math.round(progress)}% COMPLETE</span>
-          <span>ELAPSED: {formatElapsed(elapsedMs)}</span>
-        </div>
-
-        {/* Steps Card */}
+        {/* Pipeline List */}
         <div
           className="card"
-          style={{ textAlign: 'left', padding: '16px 20px' }}
+          style={{ textAlign: 'left', padding: '14px 18px', marginBottom: '20px' }}
         >
-          {ORDERED_STEPS.map((step, idx) => {
-            const isDone = completedSteps.has(step) && step !== status;
-            const isCurrent = step === status;
-            const isPending = !completedSteps.has(step) && !isCurrent;
+          {LOADING_PIPELINE.map((p, idx) => {
+            const isCurrent = activeIdx === idx;
+            const isDone = activeIdx > idx || (idx === 0 && completedSteps.has('company_research') && activeIdx !== 0);
+            const isPending = activeIdx < idx;
 
             return (
               <div
-                key={step}
+                key={p.step}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
                   padding: '8px 0',
-                  borderBottom: idx < ORDERED_STEPS.length - 1 ? '1px solid var(--border)' : 'none',
+                  borderBottom: idx < LOADING_PIPELINE.length - 1 ? '1px solid var(--border)' : 'none',
                   opacity: isPending ? 0.35 : 1,
                   transition: 'opacity 0.2s ease',
                 }}
@@ -152,15 +136,15 @@ export default function LoadingScreen({
                 {/* Status Indicator */}
                 <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
                   {isDone ? (
-                    <CheckCircle size={14} color="var(--success)" />
+                    <span style={{ color: 'var(--success)', fontSize: '14px', fontWeight: 'bold' }}>✓</span>
                   ) : isCurrent ? (
                     <Loader2
-                      size={14}
+                      size={13}
                       color="var(--brand-light)"
                       style={{ animation: 'spin 1s linear infinite' }}
                     />
                   ) : (
-                    <Circle size={14} color="var(--border)" />
+                    <Circle size={13} color="var(--border)" />
                   )}
                 </div>
 
@@ -176,30 +160,34 @@ export default function LoadingScreen({
                       fontWeight: isCurrent ? 500 : 400,
                     }}
                   >
-                    {ANALYSIS_STEP_LABELS[step]}
+                    {p.label}
                   </span>
-                </div>
-
-                {/* Index Indicator */}
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  0{idx + 1}
                 </div>
               </div>
             );
           })}
         </div>
 
-        <p
+        {/* Flat Progress Bar */}
+        <div className="progress-container" style={{ marginBottom: '8px' }}>
+          <div
+            className="progress-bar-fill"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        
+        <div
           style={{
-            marginTop: '16px',
+            display: 'flex',
+            justifyContent: 'space-between',
             fontSize: '11px',
             color: 'var(--text-muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.05em',
+            fontFamily: 'var(--font-mono)',
           }}
         >
-          LangGraph Pipeline Executing in Isolated Environment
-        </p>
+          <span>GENERATING REPORT...</span>
+          <span>{formatElapsed(elapsedMs)}</span>
+        </div>
       </div>
     </main>
   );

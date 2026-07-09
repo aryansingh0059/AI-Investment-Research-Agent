@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { 
-  Search, Sparkles, ArrowRight, BarChart2, Brain, 
+import {
+  Search, Sparkles, ArrowRight, BarChart2, Brain,
   MessageSquare, ShieldAlert, CheckSquare, Users, LayoutDashboard,
   Database, Cpu, Network, FileText, SearchCode, Code2, Globe2
 } from 'lucide-react';
@@ -29,7 +29,7 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
 
   return (
     <div style={{ background: 'var(--bg-base)', color: 'var(--text-primary)' }}>
-      
+
       {/* ── SECTION 2: HERO ── */}
       <section
         style={{
@@ -63,6 +63,16 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
           Institutional Investment Analytics Engine
         </div>
 
+        <img
+          src="/logo2.png"
+          alt="EquityLens Logo"
+          style={{
+            height: '48px',
+            width: 'auto',
+            marginBottom: '20px',
+          }}
+        />
+
         <h1
           style={{
             fontSize: 'clamp(32px, 5vw, 56px)',
@@ -72,7 +82,7 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
             letterSpacing: '-0.03em',
           }}
         >
-          AI Investment Research Agent
+          EquityLens
         </h1>
 
         <p

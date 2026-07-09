@@ -32,7 +32,7 @@ export default function Footer() {
       >
         {/* Copyright */}
         <div style={{ color: 'var(--text-muted)', fontSize: '12px' }}>
-          &copy; {new Date().getFullYear()} AI Investment Research Platform. All rights reserved.
+          &copy; {new Date().getFullYear()} EquityLens. All rights reserved.
         </div>
 
         {/* Links (GitHub, Documentation, Tech Stack) */}
