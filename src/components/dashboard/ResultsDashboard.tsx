@@ -7,8 +7,8 @@ import FinancialCard from './FinancialCard';
 import NewsCard from './NewsCard';
 import CompetitorCard from './CompetitorCard';
 import SWOTCard from './SWOTCard';
-import RiskCard from './RiskCard';
 import GrowthCard from './GrowthCard';
+import RiskCard from './RiskCard';
 import ReasoningCard from './ReasoningCard';
 import { RefreshCw, Download, Clock } from 'lucide-react';
 import { exportToPDF, exportToMarkdown } from '@/lib/utils/export';
@@ -39,92 +39,81 @@ export default function ResultsDashboard({
       style={{
         flex: 1,
         background: 'var(--bg-base)',
-        padding: '32px 0 64px',
+        padding: '24px 0 48px',
       }}
     >
-      {/* Top bar */}
+      {/* Top dashboard control panel */}
       <div
         style={{
           maxWidth: '1400px',
           margin: '0 auto',
           padding: '0 24px',
-          marginBottom: '32px',
+          marginBottom: '24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
           flexWrap: 'wrap',
-          gap: '12px',
+          gap: '16px',
         }}
       >
         <div>
           <h1
-            style={{ fontSize: '28px', fontWeight: 800, marginBottom: '4px' }}
+            style={{
+              fontSize: '22px',
+              fontWeight: 600,
+              marginBottom: '4px',
+              letterSpacing: '-0.02em',
+              color: 'var(--text-primary)',
+            }}
           >
-            Investment Report:{' '}
-            <span className="gradient-text">{result.companyProfile?.name ?? company}</span>
+            Equity Research Report: {result.companyProfile?.name ?? company}
           </h1>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
+              gap: '8px',
               color: 'var(--text-muted)',
-              fontSize: '13px',
+              fontSize: '12px',
+              fontFamily: 'var(--font-mono)',
             }}
           >
-            <Clock size={13} />
-            Analysis completed in {formatElapsed(elapsedMs)}
+            <Clock size={12} />
+            RUN TIME: {formatElapsed(elapsedMs)}
             {result.errors.length > 0 && (
-              <span style={{ marginLeft: '8px', color: 'var(--warning)' }}>
-                · {result.errors.length} data warning(s)
+              <span style={{ color: 'var(--warning)' }}>
+                · WARNINGS: {result.errors.length}
               </span>
             )}
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
           <button
             onClick={() => exportToMarkdown(result)}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '10px 18px', borderRadius: '10px',
-              background: 'var(--bg-card)', border: '1px solid var(--border)',
-              color: 'var(--text-secondary)', cursor: 'pointer',
-              fontSize: '13px', fontWeight: 500, fontFamily: 'var(--font-sans)',
-              transition: 'all 0.15s',
-            }}
+            className="btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '4px', gap: '6px' }}
           >
-            <Download size={14} /> Export MD
+            <Download size={12} /> Export Markdown
           </button>
           <button
             onClick={() => exportToPDF()}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '10px 18px', borderRadius: '10px',
-              background: 'var(--bg-card)', border: '1px solid var(--border)',
-              color: 'var(--text-secondary)', cursor: 'pointer',
-              fontSize: '13px', fontWeight: 500, fontFamily: 'var(--font-sans)',
-              transition: 'all 0.15s',
-            }}
+            className="btn-secondary"
+            style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '4px', gap: '6px' }}
           >
-            <Download size={14} /> Export PDF
+            <Download size={12} /> Export PDF
           </button>
           <button
             onClick={onReset}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '6px',
-              padding: '10px 18px', borderRadius: '10px',
-              background: 'var(--gradient-brand)', border: 'none',
-              color: 'white', cursor: 'pointer',
-              fontSize: '13px', fontWeight: 600, fontFamily: 'var(--font-sans)',
-            }}
+            className="btn-primary"
+            style={{ padding: '6px 12px', fontSize: '12px', borderRadius: '4px', gap: '6px' }}
           >
-            <RefreshCw size={14} /> New Analysis
+            <RefreshCw size={12} /> New Analysis
           </button>
         </div>
       </div>
 
-      {/* Content */}
+      {/* Grid Layout (Desktop First, Tablet, Mobile) */}
       <div
         style={{
           maxWidth: '1400px',
@@ -136,7 +125,7 @@ export default function ResultsDashboard({
         }}
       >
         {/* Row 1: Investment recommendation (hero) + Company Card */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
           <InvestmentCard result={result} />
           <CompanyCard profile={result.companyProfile} />
         </div>
@@ -145,13 +134,13 @@ export default function ResultsDashboard({
         <FinancialCard financialData={result.financialData} />
 
         {/* Row 3: News + Competitors */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
           <NewsCard news={result.news} sentiment={result.newsSentiment} />
           <CompetitorCard competitors={result.competitors} currentSymbol={result.symbol} />
         </div>
 
         {/* Row 4: SWOT + Growth */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
           <SWOTCard swot={result.swot} />
           <GrowthCard growthFactors={result.growthFactors} />
         </div>

@@ -1,7 +1,6 @@
 'use client';
 
-import Link from 'next/link';
-import { TrendingUp, BarChart2 } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 
 interface NavbarProps {
   onLogoClick?: () => void;
@@ -14,8 +13,7 @@ export default function Navbar({ onLogoClick }: NavbarProps) {
         position: 'sticky',
         top: 0,
         zIndex: 50,
-        background: 'rgba(5, 11, 20, 0.85)',
-        backdropFilter: 'blur(20px)',
+        background: 'var(--bg-base)',
         borderBottom: '1px solid var(--border)',
       }}
     >
@@ -24,7 +22,7 @@ export default function Navbar({ onLogoClick }: NavbarProps) {
           maxWidth: '1400px',
           margin: '0 auto',
           padding: '0 24px',
-          height: '64px',
+          height: '56px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -36,42 +34,43 @@ export default function Navbar({ onLogoClick }: NavbarProps) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
+            gap: '8px',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
             padding: 0,
+            outline: 'none',
           }}
         >
           <div
             style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '10px',
-              background: 'var(--gradient-brand)',
+              width: '28px',
+              height: '28px',
+              borderRadius: '6px',
+              background: 'var(--brand)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
           >
-            <TrendingUp size={20} color="white" />
+            <TrendingUp size={16} color="white" />
           </div>
-          <span style={{ fontWeight: 700, fontSize: '18px', color: 'var(--text-primary)' }}>
-            AI<span className="gradient-text">Research</span>
+          <span style={{ fontWeight: 600, fontSize: '15px', color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+            AI <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>Investment Research</span>
           </span>
         </button>
 
-        {/* Nav items */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Nav status */}
+        <div style={{ display: 'flex', alignItems: 'center' }}>
           <div
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '6px 14px',
-              borderRadius: '20px',
-              background: 'rgba(59,130,246,0.1)',
-              border: '1px solid rgba(59,130,246,0.2)',
+              padding: '4px 10px',
+              borderRadius: '4px',
+              background: 'var(--bg-surface)',
+              border: '1px solid var(--border)',
             }}
           >
             <div
@@ -80,11 +79,10 @@ export default function Navbar({ onLogoClick }: NavbarProps) {
                 height: '6px',
                 borderRadius: '50%',
                 background: 'var(--success)',
-                animation: 'pulse-glow 2s infinite',
               }}
             />
-            <span style={{ fontSize: '12px', color: 'var(--brand-light)', fontWeight: 500 }}>
-              AI Analyst Active
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              System Terminal Active
             </span>
           </div>
         </div>

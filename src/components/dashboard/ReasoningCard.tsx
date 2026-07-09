@@ -12,30 +12,31 @@ interface ReasoningCardProps {
 
 export default function ReasoningCard({ reasoning, summary, scores, errors }: ReasoningCardProps) {
   return (
-    <div className="card animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-      <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>
-        🧠 AI Analyst Reasoning
+    <div className="card">
+      <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>
+        AI Analyst Reasoning & Disclosures
       </h2>
 
       {/* Executive Summary */}
       {summary && (
         <div
           style={{
-            padding: '16px',
-            borderRadius: '12px',
-            background: 'rgba(59,130,246,0.08)',
-            border: '1px solid rgba(59,130,246,0.2)',
-            marginBottom: '20px',
+            padding: '14px 16px',
+            borderRadius: '6px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border)',
+            marginBottom: '16px',
             display: 'flex',
-            gap: '12px',
+            gap: '10px',
+            alignItems: 'flex-start',
           }}
         >
-          <Info size={16} style={{ color: 'var(--brand)', flexShrink: 0, marginTop: '2px' }} />
+          <Info size={14} style={{ color: 'var(--brand-light)', flexShrink: 0, marginTop: '2px' }} />
           <div>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--brand-light)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <div style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Executive Summary
             </div>
-            <p style={{ margin: 0, fontSize: '14px', color: 'var(--text-secondary)', lineHeight: '1.7' }}>
+            <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
               {summary}
             </p>
           </div>
@@ -46,72 +47,72 @@ export default function ReasoningCard({ reasoning, summary, scores, errors }: Re
       {reasoning ? (
         <div
           style={{
-            fontSize: '14px',
+            fontSize: '13px',
             color: 'var(--text-secondary)',
-            lineHeight: '1.8',
+            lineHeight: '1.6',
             whiteSpace: 'pre-wrap',
             padding: '16px',
-            borderRadius: '12px',
+            borderRadius: '6px',
             background: 'var(--bg-surface)',
             border: '1px solid var(--border)',
-            marginBottom: errors.length > 0 ? '16px' : 0,
+            marginBottom: errors.length > 0 ? '12px' : 0,
           }}
         >
           {reasoning}
         </div>
       ) : (
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-          AI reasoning unavailable. Add GEMINI_API_KEY for detailed analysis.
+        <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+          Detailed AI reasoning unavailable.
         </p>
       )}
 
-      {/* Confidence indicator */}
+      {/* Confidence status */}
       {scores && (
         <div
           style={{
-            marginTop: '16px',
+            marginTop: '12px',
             display: 'flex',
             alignItems: 'center',
-            gap: '10px',
-            padding: '10px 16px',
-            borderRadius: '10px',
+            gap: '8px',
+            padding: '8px 12px',
+            borderRadius: '4px',
             background: 'var(--bg-surface)',
             border: '1px solid var(--border)',
           }}
         >
-          <CheckCircle size={14} style={{ color: 'var(--success)' }} />
-          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
-            Analysis confidence:{' '}
-            <strong style={{ color: 'var(--text-primary)' }}>{scores.confidence}%</strong>
+          <CheckCircle size={13} style={{ color: 'var(--success)' }} />
+          <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+            Analysis confidence score:{' '}
+            <strong style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>{scores.confidence}%</strong>
             {scores.confidence < 60 && (
               <span style={{ color: 'var(--warning)', marginLeft: '8px' }}>
-                (limited data available — add missing API keys for higher confidence)
+                (limited data available — results might be partial)
               </span>
             )}
           </span>
         </div>
       )}
 
-      {/* Errors/warnings */}
+      {/* Warnings */}
       {errors.length > 0 && (
         <div
           style={{
             marginTop: '12px',
-            padding: '12px 16px',
-            borderRadius: '10px',
-            background: 'rgba(245,158,11,0.08)',
-            border: '1px solid rgba(245,158,11,0.2)',
+            padding: '10px 14px',
+            borderRadius: '6px',
+            background: 'rgba(245,158,11,0.02)',
+            border: '1px solid rgba(245,158,11,0.15)',
           }}
         >
-          <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '8px' }}>
-            <AlertTriangle size={14} style={{ color: 'var(--warning)' }} />
-            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--warning)' }}>
-              Data Warnings ({errors.length})
+          <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '6px' }}>
+            <AlertTriangle size={13} style={{ color: 'var(--warning)' }} />
+            <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--warning)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              System Disclosures ({errors.length})
             </span>
           </div>
-          <ul style={{ margin: 0, padding: '0 0 0 16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <ul style={{ margin: 0, padding: '0 0 0 14px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             {errors.map((err, i) => (
-              <li key={i} style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{err}</li>
+              <li key={i} style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{err}</li>
             ))}
           </ul>
         </div>
@@ -121,15 +122,14 @@ export default function ReasoningCard({ reasoning, summary, scores, errors }: Re
       <p
         style={{
           marginTop: '16px',
-          fontSize: '11px',
+          fontSize: '10px',
           color: 'var(--text-muted)',
-          fontStyle: 'italic',
+          lineHeight: '1.4',
           borderTop: '1px solid var(--border)',
-          paddingTop: '12px',
+          paddingTop: '8px',
         }}
       >
-        ⚠️ This is AI-generated analysis for research purposes only. It is NOT financial advice.
-        Always conduct your own due diligence and consult a qualified financial advisor before investing.
+        DISCLAIMER: This report is generated by a automated AI pipeline for informational and educational purposes only. It does not constitute investment advice, financial planning, or a recommendation to buy or sell any security. Market investments carry substantial risk.
       </p>
     </div>
   );

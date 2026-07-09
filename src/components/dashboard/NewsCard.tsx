@@ -18,7 +18,7 @@ function SentimentBadge({ sentiment }: { sentiment?: string }) {
   }[sentiment] ?? { cls: 'badge-neutral', icon: null, label: sentiment };
 
   return (
-    <span className={`badge ${config.cls}`}>
+    <span className={`badge ${config.cls}`} style={{ fontSize: '9px', padding: '1px 6px' }}>
       {config.icon}
       {config.label}
     </span>
@@ -27,72 +27,61 @@ function SentimentBadge({ sentiment }: { sentiment?: string }) {
 
 export default function NewsCard({ news, sentiment }: NewsCardProps) {
   return (
-    <div className="card animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+    <div className="card">
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Latest News</h2>
+        <h2 style={{ fontSize: '16px', fontWeight: 600 }}>Market News Sentiment</h2>
         {sentiment && (
           <div
             style={{
-              display: 'flex', gap: '8px', alignItems: 'center',
-              padding: '6px 12px', borderRadius: '8px',
+              display: 'flex', gap: '6px', alignItems: 'center',
+              padding: '4px 8px', borderRadius: '4px',
               background: 'var(--bg-surface)', border: '1px solid var(--border)',
-              fontSize: '12px', color: 'var(--text-secondary)',
+              fontSize: '11px', color: 'var(--text-secondary)',
             }}
           >
-            Overall: <SentimentBadge sentiment={sentiment.overall} />
+            Sentiment: <SentimentBadge sentiment={sentiment.overall} />
           </div>
         )}
       </div>
 
-      {/* Sentiment bar */}
+      {/* Sentiment ratio bar */}
       {sentiment && sentiment.positiveCount + sentiment.negativeCount + sentiment.neutralCount > 0 && (
         <div style={{ marginBottom: '16px' }}>
-          <div
-            style={{
-              display: 'flex',
-              height: '6px',
-              borderRadius: '4px',
-              overflow: 'hidden',
-              background: 'var(--bg-surface)',
-            }}
-          >
+          <div className="progress-container">
             {(() => {
               const total = sentiment.positiveCount + sentiment.negativeCount + sentiment.neutralCount;
               return (
-                <>
-                  <div style={{ width: `${(sentiment.positiveCount / total) * 100}%`, background: 'var(--success)', transition: 'width 0.8s ease' }} />
-                  <div style={{ width: `${(sentiment.neutralCount / total) * 100}%`, background: 'var(--neutral)', transition: 'width 0.8s ease' }} />
-                  <div style={{ width: `${(sentiment.negativeCount / total) * 100}%`, background: 'var(--danger)', transition: 'width 0.8s ease' }} />
-                </>
+                <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+                  <div style={{ width: `${(sentiment.positiveCount / total) * 100}%`, background: 'var(--success)' }} />
+                  <div style={{ width: `${(sentiment.neutralCount / total) * 100}%`, background: 'var(--neutral)' }} />
+                  <div style={{ width: `${(sentiment.negativeCount / total) * 100}%`, background: 'var(--danger)' }} />
+                </div>
               );
             })()}
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: 'var(--text-muted)', marginTop: '4px' }}>
-            <span>✅ {sentiment.positiveCount} positive</span>
-            <span>➖ {sentiment.neutralCount} neutral</span>
-            <span>❌ {sentiment.negativeCount} negative</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px', fontFamily: 'var(--font-mono)' }}>
+            <span>{sentiment.positiveCount} POSITIVE</span>
+            <span>{sentiment.neutralCount} NEUTRAL</span>
+            <span>{sentiment.negativeCount} NEGATIVE</span>
           </div>
         </div>
       )}
 
       {news.length === 0 ? (
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>
-          No recent news available. Add NEWS_API_KEY to enable.
+        <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>
+          No recent news available.
         </p>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          {news.slice(0, 6).map((article, i) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {news.slice(0, 5).map((article, i) => (
             <div
               key={i}
               style={{
-                padding: '12px',
-                borderRadius: '10px',
+                padding: '10px 12px',
+                borderRadius: '6px',
                 background: 'var(--bg-surface)',
                 border: '1px solid var(--border)',
-                transition: 'border-color 0.2s',
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-hover)'; }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'; }}
             >
               <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -104,23 +93,23 @@ export default function NewsCard({ news, sentiment }: NewsCardProps) {
                       color: 'var(--text-primary)',
                       textDecoration: 'none',
                       fontSize: '13px',
-                      fontWeight: 600,
+                      fontWeight: 500,
                       lineHeight: '1.4',
                       display: 'block',
-                      marginBottom: '6px',
+                      marginBottom: '4px',
                     }}
                   >
                     {article.title}
                   </a>
-                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{article.source}</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>·</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{formatDate(article.publishedAt)}</span>
+                  <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{article.source}</span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>·</span>
+                    <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{formatDate(article.publishedAt)}</span>
                     <SentimentBadge sentiment={article.sentiment} />
                   </div>
                   {article.description && (
-                    <p style={{ margin: '6px 0 0', fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
-                      {truncateText(article.description, 120)}
+                    <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
+                      {truncateText(article.description, 100)}
                     </p>
                   )}
                 </div>
@@ -128,9 +117,9 @@ export default function NewsCard({ news, sentiment }: NewsCardProps) {
                   href={article.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  style={{ color: 'var(--text-muted)', flexShrink: 0 }}
+                  style={{ color: 'var(--text-muted)', flexShrink: 0, marginTop: '2px' }}
                 >
-                  <ExternalLink size={13} />
+                  <ExternalLink size={12} />
                 </a>
               </div>
             </div>

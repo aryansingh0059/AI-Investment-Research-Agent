@@ -8,15 +8,15 @@ interface RiskCardProps {
 }
 
 function RiskMeter({ level }: { level: 'low' | 'medium' | 'high' }) {
-  const pct = level === 'low' ? 30 : level === 'medium' ? 65 : 95;
+  const pct = level === 'low' ? 33 : level === 'medium' ? 66 : 100;
   const color = riskLevelToColor(level);
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '120px' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: '100px' }}>
       <div
         style={{
           flex: 1,
-          height: '6px',
-          borderRadius: '3px',
+          height: '4px',
+          borderRadius: '2px',
           background: 'var(--border)',
           overflow: 'hidden',
         }}
@@ -26,18 +26,18 @@ function RiskMeter({ level }: { level: 'low' | 'medium' | 'high' }) {
             width: `${pct}%`,
             height: '100%',
             background: color,
-            borderRadius: '3px',
-            transition: 'width 0.8s ease',
+            borderRadius: '2px',
           }}
         />
       </div>
       <span
         style={{
-          fontSize: '11px',
+          fontSize: '10px',
           fontWeight: 600,
           color,
-          textTransform: 'capitalize',
-          minWidth: '40px',
+          textTransform: 'uppercase',
+          minWidth: '36px',
+          textAlign: 'right',
         }}
       >
         {level}
@@ -46,43 +46,29 @@ function RiskMeter({ level }: { level: 'low' | 'medium' | 'high' }) {
   );
 }
 
-const RISK_ICONS: Record<string, string> = {
-  'Market Risk': '📈',
-  'Business Risk': '🏢',
-  'Debt Risk': '💳',
-  'Regulatory Risk': '⚖️',
-  'Competition Risk': '⚡',
-  'Geographical Risk': '🌍',
-  'Technology Risk': '💻',
-};
-
 export default function RiskCard({ risks }: RiskCardProps) {
   if (risks.length === 0) {
     return (
-      <div className="card animate-fade-in-up" style={{ animationDelay: '0.45s' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>Risk Analysis</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Risk data unavailable.</p>
+      <div className="card">
+        <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px' }}>Risk Assessment</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Risk data unavailable.</p>
       </div>
     );
   }
 
   const highCount = risks.filter((r) => r.level === 'high').length;
   const mediumCount = risks.filter((r) => r.level === 'medium').length;
-  const lowCount = risks.filter((r) => r.level === 'low').length;
 
   return (
-    <div className="card animate-fade-in-up" style={{ animationDelay: '0.45s' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Risk Analysis</h2>
-        <div style={{ display: 'flex', gap: '8px' }}>
+    <div className="card">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600 }}>Risk Assessment Matrix</h2>
+        <div style={{ display: 'flex', gap: '6px' }}>
           {highCount > 0 && (
-            <span className="badge badge-danger">🔴 {highCount} High</span>
+            <span className="badge badge-danger" style={{ fontSize: '10px' }}>{highCount} High Exposure</span>
           )}
           {mediumCount > 0 && (
-            <span className="badge badge-warning">🟡 {mediumCount} Medium</span>
-          )}
-          {lowCount > 0 && (
-            <span className="badge badge-success">🟢 {lowCount} Low</span>
+            <span className="badge badge-warning" style={{ fontSize: '10px' }}>{mediumCount} Moderate</span>
           )}
         </div>
       </div>
@@ -90,7 +76,7 @@ export default function RiskCard({ risks }: RiskCardProps) {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
           gap: '12px',
         }}
       >
@@ -98,11 +84,10 @@ export default function RiskCard({ risks }: RiskCardProps) {
           <div
             key={i}
             style={{
-              padding: '14px',
-              borderRadius: '12px',
+              padding: '12px 14px',
+              borderRadius: '6px',
               background: 'var(--bg-surface)',
-              border: `1px solid ${riskLevelToColor(risk.level)}30`,
-              transition: 'border-color 0.2s',
+              border: `1px solid var(--border)`,
             }}
           >
             <div
@@ -110,20 +95,15 @@ export default function RiskCard({ risks }: RiskCardProps) {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                marginBottom: '8px',
+                marginBottom: '6px',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '16px' }}>
-                  {RISK_ICONS[risk.category] ?? '⚠️'}
-                </span>
-                <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
-                  {risk.category}
-                </span>
-              </div>
+              <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
+                {risk.category}
+              </span>
               <RiskMeter level={risk.level} />
             </div>
-            <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+            <p style={{ margin: 0, fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
               {risk.description}
             </p>
           </div>

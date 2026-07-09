@@ -7,58 +7,40 @@ interface GrowthCardProps {
   growthFactors: GrowthFactor[];
 }
 
-const GROWTH_ICONS: Record<string, string> = {
-  'Revenue Growth': '📈',
-  'Market Expansion': '🌐',
-  Innovation: '💡',
-  'AI & Technology Initiatives': '🤖',
-  'Strategic Partnerships & Acquisitions': '🤝',
-  'Competitive Positioning': '🏆',
-};
-
 export default function GrowthCard({ growthFactors }: GrowthCardProps) {
   if (growthFactors.length === 0) {
     return (
-      <div className="card animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>Growth Analysis</h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Growth data unavailable.</p>
+      <div className="card">
+        <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px' }}>Growth Catalysts</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Growth data unavailable.</p>
       </div>
     );
   }
 
   const highImpact = growthFactors.filter((g) => g.impact === 'high').length;
-  const mediumImpact = growthFactors.filter((g) => g.impact === 'medium').length;
 
   return (
-    <div className="card animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700 }}>Growth Analysis</h2>
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {highImpact > 0 && <span className="badge badge-success">🚀 {highImpact} High Impact</span>}
-          {mediumImpact > 0 && <span className="badge badge-brand">⬆️ {mediumImpact} Medium</span>}
-        </div>
+    <div className="card">
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+        <h2 style={{ fontSize: '16px', fontWeight: 600 }}>Growth Drivers</h2>
+        {highImpact > 0 && (
+          <span className="badge badge-success" style={{ fontSize: '10px' }}>
+            {highImpact} High Impact Catalysts
+          </span>
+        )}
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
         {growthFactors.map((factor, i) => (
           <div
             key={i}
             style={{
-              padding: '14px',
-              borderRadius: '12px',
+              padding: '10px 12px',
+              borderRadius: '6px',
               background: 'var(--bg-surface)',
               border: '1px solid var(--border)',
-              display: 'flex',
-              gap: '12px',
-              alignItems: 'flex-start',
-              transition: 'border-color 0.2s',
             }}
-            onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border-hover)'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = 'var(--border)'; }}
           >
-            <div style={{ fontSize: '20px', flexShrink: 0 }}>
-              {GROWTH_ICONS[factor.category] ?? '🚀'}
-            </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px', flexWrap: 'wrap' }}>
                 <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--text-primary)' }}>
@@ -66,20 +48,21 @@ export default function GrowthCard({ growthFactors }: GrowthCardProps) {
                 </span>
                 <span
                   style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
+                    fontSize: '9px',
+                    fontWeight: 600,
                     color: impactToColor(factor.impact),
                     textTransform: 'uppercase',
-                    letterSpacing: '0.08em',
-                    padding: '2px 6px',
-                    borderRadius: '4px',
-                    background: `${impactToColor(factor.impact)}20`,
+                    letterSpacing: '0.05em',
+                    padding: '1px 6px',
+                    borderRadius: '3px',
+                    background: 'var(--bg-base)',
+                    border: `1px solid ${impactToColor(factor.impact)}30`,
                   }}
                 >
-                  {factor.impact} impact
+                  {factor.impact}
                 </span>
               </div>
-              <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+              <p style={{ margin: 0, fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' }}>
                 {factor.description}
               </p>
             </div>

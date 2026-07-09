@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { Search, Sparkles, TrendingUp, ArrowRight } from 'lucide-react';
+import { Search, Sparkles, ArrowRight } from 'lucide-react';
 import { EXAMPLE_COMPANIES } from '@/constants';
 
 interface HeroSearchProps {
@@ -25,132 +25,99 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
 
   return (
     <main
-      className="hero-bg hero-grid"
+      className="hero-flat-bg"
       style={{
         flex: 1,
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '80px 24px',
-        minHeight: 'calc(100vh - 64px)',
-        position: 'relative',
-        overflow: 'hidden',
+        padding: '64px 24px',
+        minHeight: 'calc(100vh - 56px)',
       }}
     >
-      {/* Floating orbs */}
       <div
         style={{
-          position: 'absolute',
-          top: '20%',
-          left: '10%',
-          width: '300px',
-          height: '300px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(59,130,246,0.08) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '15%',
-          right: '8%',
-          width: '400px',
-          height: '400px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(6,182,212,0.06) 0%, transparent 70%)',
-          pointerEvents: 'none',
-        }}
-      />
-
-      <div
-        style={{
-          maxWidth: '720px',
+          maxWidth: '640px',
           width: '100%',
           textAlign: 'center',
-          position: 'relative',
-          zIndex: 1,
         }}
-        className="animate-fade-in-up"
+        className="animate-fade-in"
       >
-        {/* Badge */}
+        {/* Sparkles / Info Badge */}
         <div
           style={{
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '8px',
-            padding: '8px 18px',
-            borderRadius: '24px',
-            background: 'rgba(59,130,246,0.1)',
-            border: '1px solid rgba(59,130,246,0.2)',
-            marginBottom: '28px',
-            fontSize: '13px',
-            color: 'var(--brand-light)',
+            gap: '6px',
+            padding: '6px 12px',
+            borderRadius: '4px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border)',
+            marginBottom: '24px',
+            fontSize: '12px',
+            color: 'var(--text-secondary)',
             fontWeight: 500,
           }}
         >
-          <Sparkles size={14} />
-          Powered by Google Gemini + LangGraph
+          <Sparkles size={12} style={{ color: 'var(--brand-light)' }} />
+          Enterprise Intelligence Terminal
         </div>
 
         {/* Headline */}
         <h1
           style={{
-            fontSize: 'clamp(36px, 6vw, 72px)',
-            fontWeight: 900,
-            lineHeight: 1.1,
-            marginBottom: '20px',
-            letterSpacing: '-0.04em',
+            fontSize: '38px',
+            fontWeight: 700,
+            lineHeight: 1.15,
+            marginBottom: '16px',
+            letterSpacing: '-0.03em',
+            color: 'var(--text-primary)',
           }}
         >
-          AI-Powered{' '}
-          <span className="gradient-text">Investment</span>
-          <br />
-          Research Agent
+          AI Investment Research Agent
         </h1>
 
         <p
           style={{
-            fontSize: '18px',
+            fontSize: '14px',
             color: 'var(--text-secondary)',
-            marginBottom: '48px',
-            lineHeight: 1.7,
-            maxWidth: '540px',
-            margin: '0 auto 48px',
+            marginBottom: '36px',
+            lineHeight: 1.6,
+            maxWidth: '520px',
+            margin: '0 auto 36px',
           }}
         >
-          Enter any company name. Our AI analyst performs comprehensive equity research
-          — financial analysis, news sentiment, SWOT, risk scoring — and delivers a
-          professional investment recommendation in seconds.
+          Conduct comprehensive equity research in seconds. Our engine runs an isolated 
+          LangGraph workflow analyzing financials, market metrics, sentiment, and risks 
+          to generate institutional-grade reports.
         </p>
 
-        {/* Search form */}
+        {/* Search Console */}
         <form onSubmit={handleSubmit} style={{ marginBottom: '24px' }}>
           <div
             style={{
               position: 'relative',
               display: 'flex',
-              borderRadius: '16px',
+              borderRadius: '8px',
               border: `1px solid ${focused ? 'var(--border-active)' : 'var(--border)'}`,
               background: 'var(--bg-card)',
-              boxShadow: focused ? 'var(--shadow-brand)' : 'var(--shadow-md)',
-              transition: 'border-color 0.2s, box-shadow 0.2s',
+              transition: 'border-color 0.15s ease',
               overflow: 'hidden',
+              padding: '4px',
             }}
           >
             <div
               style={{
                 position: 'absolute',
-                left: '20px',
+                left: '16px',
                 top: '50%',
                 transform: 'translateY(-50%)',
-                color: focused ? 'var(--brand)' : 'var(--text-muted)',
-                transition: 'color 0.2s',
+                color: 'var(--text-muted)',
                 pointerEvents: 'none',
               }}
             >
-              <Search size={20} />
+              <Search size={16} />
             </div>
             <input
               ref={inputRef}
@@ -159,15 +126,15 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
               onChange={(e) => setValue(e.target.value)}
               onFocus={() => setFocused(true)}
               onBlur={() => setFocused(false)}
-              placeholder="Enter company name (e.g. Apple, Tesla, Reliance...)"
+              placeholder="Search company or ticker symbol..."
               id="company-search-input"
               style={{
                 flex: 1,
                 background: 'transparent',
                 border: 'none',
                 outline: 'none',
-                padding: '18px 20px 18px 52px',
-                fontSize: '17px',
+                padding: '12px 16px 12px 42px',
+                fontSize: '14px',
                 color: 'var(--text-primary)',
                 fontFamily: 'var(--font-sans)',
               }}
@@ -177,46 +144,39 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
             <button
               type="submit"
               disabled={!value.trim()}
+              className="btn-primary"
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '12px 24px',
-                margin: '8px',
-                borderRadius: '10px',
-                background: value.trim() ? 'var(--gradient-brand)' : 'var(--border)',
-                border: 'none',
-                color: 'white',
-                fontWeight: 700,
-                fontSize: '15px',
-                cursor: value.trim() ? 'pointer' : 'default',
-                transition: 'all 0.2s',
-                whiteSpace: 'nowrap',
-                fontFamily: 'var(--font-sans)',
+                padding: '0 16px',
+                height: '38px',
+                borderRadius: '6px',
+                gap: '6px',
               }}
             >
-              Analyze
-              <ArrowRight size={16} />
+              Search
+              <ArrowRight size={14} />
             </button>
           </div>
         </form>
 
-        {/* Example chips */}
-        <div>
+        {/* Examples */}
+        <div style={{ marginBottom: '48px' }}>
           <p
             style={{
-              fontSize: '13px',
+              fontSize: '11px',
               color: 'var(--text-muted)',
-              marginBottom: '12px',
+              marginBottom: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              fontWeight: 600,
             }}
           >
-            Try an example:
+            Select Asset Symbol
           </p>
           <div
             style={{
               display: 'flex',
               flexWrap: 'wrap',
-              gap: '8px',
+              gap: '6px',
               justifyContent: 'center',
             }}
           >
@@ -225,65 +185,64 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
                 key={c.symbol}
                 onClick={() => handleChip(c.name)}
                 style={{
-                  padding: '7px 16px',
-                  borderRadius: '20px',
-                  background: 'var(--bg-card)',
+                  padding: '5px 12px',
+                  borderRadius: '4px',
+                  background: 'var(--bg-surface)',
                   border: '1px solid var(--border)',
                   color: 'var(--text-secondary)',
-                  fontSize: '13px',
+                  fontSize: '12px',
                   fontWeight: 500,
                   cursor: 'pointer',
-                  transition: 'all 0.15s',
+                  transition: 'all 0.1s ease',
                   fontFamily: 'var(--font-sans)',
                 }}
                 onMouseEnter={(e) => {
-                  (e.target as HTMLButtonElement).style.borderColor = 'var(--border-hover)';
-                  (e.target as HTMLButtonElement).style.color = 'var(--text-primary)';
-                  (e.target as HTMLButtonElement).style.background = 'var(--bg-card-hover)';
+                  const target = e.currentTarget;
+                  target.style.borderColor = 'var(--border-hover)';
+                  target.style.color = 'var(--text-primary)';
+                  target.style.backgroundColor = 'var(--bg-card-hover)';
                 }}
                 onMouseLeave={(e) => {
-                  (e.target as HTMLButtonElement).style.borderColor = 'var(--border)';
-                  (e.target as HTMLButtonElement).style.color = 'var(--text-secondary)';
-                  (e.target as HTMLButtonElement).style.background = 'var(--bg-card)';
+                  const target = e.currentTarget;
+                  target.style.borderColor = 'var(--border)';
+                  target.style.color = 'var(--text-secondary)';
+                  target.style.backgroundColor = 'var(--bg-surface)';
                 }}
               >
-                {c.name}
+                {c.symbol} <span style={{ color: 'var(--text-muted)', fontWeight: 400 }}>{c.name}</span>
               </button>
             ))}
           </div>
         </div>
 
-        {/* Stats strip */}
+        {/* Metadata stats strip */}
         <div
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: '40px',
-            marginTop: '64px',
-            paddingTop: '32px',
+            gap: '32px',
+            paddingTop: '24px',
             borderTop: '1px solid var(--border)',
             flexWrap: 'wrap',
           }}
         >
           {[
-            { label: 'Data Sources', value: '5+' },
-            { label: 'AI Models', value: 'Gemini' },
-            { label: 'Analysis Nodes', value: '9' },
-            { label: 'Avg. Time', value: '~30s' },
+            { label: 'Market Indexes', value: 'Global' },
+            { label: 'Data Source', value: 'Yahoo Finance' },
+            { label: 'Model Core', value: 'Gemini 2.5' },
+            { label: 'Analytic Steps', value: '9 Nodes' },
           ].map((stat) => (
-            <div key={stat.label} style={{ textAlign: 'center' }}>
+            <div key={stat.label} style={{ textAlign: 'left', minWidth: '100px' }}>
               <div
                 style={{
-                  fontSize: '24px',
-                  fontWeight: 800,
-                  background: 'var(--gradient-brand)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  fontSize: '12px',
+                  fontWeight: 600,
+                  color: 'var(--text-primary)',
                 }}
               >
                 {stat.value}
               </div>
-              <div style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '2px' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {stat.label}
               </div>
             </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import type { FinancialData } from '@/types/financial';
-import { formatCurrency, formatPercent, formatNumber } from '@/lib/utils/formatters';
+import { formatCurrency, formatPercent } from '@/lib/utils/formatters';
 import {
   BarChart, Bar, LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   CartesianGrid, Legend,
@@ -15,9 +15,9 @@ const CHART_TOOLTIP_STYLE = {
   contentStyle: {
     background: 'var(--bg-card)',
     border: '1px solid var(--border)',
-    borderRadius: '8px',
+    borderRadius: '4px',
     color: 'var(--text-primary)',
-    fontSize: '12px',
+    fontSize: '11px',
   },
 };
 
@@ -35,15 +35,15 @@ function MetricBox({
   return (
     <div
       style={{
-        padding: '14px',
-        borderRadius: '12px',
+        padding: '12px 14px',
+        borderRadius: '6px',
         background: 'var(--bg-surface)',
         border: '1px solid var(--border)',
       }}
     >
-      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '6px' }}>{label}</div>
-      <div style={{ fontSize: '18px', fontWeight: 700, color }}>{value}</div>
-      {sub && <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{sub}</div>}
+      <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>{label}</div>
+      <div style={{ fontSize: '16px', fontWeight: 700, color, fontFamily: 'var(--font-mono)' }}>{value}</div>
+      {sub && <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '2px' }}>{sub}</div>}
     </div>
   );
 }
@@ -51,9 +51,9 @@ function MetricBox({
 export default function FinancialCard({ financialData }: FinancialCardProps) {
   if (!financialData) {
     return (
-      <div className="card animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-        <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>Financial Analysis</h2>
-        <p style={{ color: 'var(--text-muted)' }}>Financial data unavailable. Yahoo Finance could not return statements for this symbol.</p>
+      <div className="card">
+        <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '12px' }}>Financial Analysis</h2>
+        <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Financial data unavailable. Yahoo Finance could not return statements for this symbol.</p>
       </div>
     );
   }
@@ -76,22 +76,22 @@ export default function FinancialCard({ financialData }: FinancialCardProps) {
   const m = metrics;
 
   return (
-    <div className="card animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-      <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '20px' }}>Financial Analysis</h2>
+    <div className="card">
+      <h2 style={{ fontSize: '16px', fontWeight: 600, marginBottom: '16px' }}>Financial Performance</h2>
 
       {/* Key Metrics Grid */}
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
           gap: '12px',
-          marginBottom: '28px',
+          marginBottom: '24px',
         }}
       >
         <MetricBox
           label="Revenue"
           value={formatCurrency(financialData.latestRevenue)}
-          color="var(--brand-light)"
+          color="var(--text-primary)"
         />
         <MetricBox
           label="Net Income"
@@ -127,23 +127,23 @@ export default function FinancialCard({ financialData }: FinancialCardProps) {
         <MetricBox label="Beta" value={m.beta != null ? m.beta.toFixed(2) : 'N/A'} />
       </div>
 
-      {/* Charts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+      {/* Charts (Transparent Backgrounds, Subtle Grids, Blue/Green Only) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
         {revenueData.length > 0 && (
           <div>
-            <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--text-secondary)' }}>
+            <h3 style={{ fontSize: '12px', fontWeight: 600, marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
               Revenue & Net Income ($B)
             </h3>
             <div style={{ height: '200px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData} barGap={2}>
+                <BarChart data={revenueData} barGap={4}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <Tooltip {...CHART_TOOLTIP_STYLE} />
-                  <Legend wrapperStyle={{ fontSize: '11px', color: 'var(--text-muted)' }} />
-                  <Bar dataKey="Revenue" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="Net Income" fill="#22c55e" radius={[4, 4, 0, 0]} />
+                  <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <Tooltip {...CHART_TOOLTIP_STYLE} cursor={{ fill: 'rgba(255,255,255,0.02)' }} />
+                  <Legend wrapperStyle={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }} />
+                  <Bar dataKey="Revenue" fill="#2563EB" radius={[2, 2, 0, 0]} />
+                  <Bar dataKey="Net Income" fill="#10B981" radius={[2, 2, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
@@ -152,19 +152,19 @@ export default function FinancialCard({ financialData }: FinancialCardProps) {
 
         {cashFlowData.length > 0 && (
           <div>
-            <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--text-secondary)' }}>
-              Cash Flow ($B)
+            <h3 style={{ fontSize: '12px', fontWeight: 600, marginBottom: '12px', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Cash Flow Performance ($B)
             </h3>
             <div style={{ height: '200px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={cashFlowData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                  <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
-                  <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} axisLine={false} tickLine={false} />
+                  <XAxis dataKey="year" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 10 }} axisLine={false} tickLine={false} />
                   <Tooltip {...CHART_TOOLTIP_STYLE} />
-                  <Legend wrapperStyle={{ fontSize: '11px', color: 'var(--text-muted)' }} />
-                  <Line type="monotone" dataKey="Free Cash Flow" stroke="#06b6d4" strokeWidth={2} dot={{ r: 4 }} />
-                  <Line type="monotone" dataKey="Operating CF" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 4 }} />
+                  <Legend wrapperStyle={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }} />
+                  <Line type="monotone" dataKey="Free Cash Flow" stroke="#10B981" strokeWidth={1.5} dot={{ r: 3, fill: '#10B981', strokeWidth: 0 }} activeDot={{ r: 4 }} />
+                  <Line type="monotone" dataKey="Operating CF" stroke="#2563EB" strokeWidth={1.5} dot={{ r: 3, fill: '#2563EB', strokeWidth: 0 }} activeDot={{ r: 4 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>

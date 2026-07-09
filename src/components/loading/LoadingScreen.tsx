@@ -1,7 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { CheckCircle, Circle, Loader2, AlertCircle } from 'lucide-react';
+import { CheckCircle, Circle, Loader2 } from 'lucide-react';
 import type { AnalysisStep } from '@/types/recommendation';
 import { ANALYSIS_STEP_LABELS } from '@/constants';
 
@@ -16,18 +15,6 @@ const ORDERED_STEPS: AnalysisStep[] = [
   'swot_generation',
   'decision_engine',
 ];
-
-const STEP_ICONS: Record<string, string> = {
-  company_research: '🏢',
-  financial_analysis: '📊',
-  news_analysis: '📰',
-  web_search: '🔍',
-  competitor_analysis: '⚡',
-  risk_analysis: '🛡️',
-  growth_analysis: '🚀',
-  swot_generation: '🧠',
-  decision_engine: '🎯',
-};
 
 interface LoadingScreenProps {
   status: AnalysisStep;
@@ -53,7 +40,6 @@ export default function LoadingScreen({
 }: LoadingScreenProps) {
   const currentIdx = ORDERED_STEPS.indexOf(status);
   const progress = currentIdx >= 0 ? ((currentIdx + 1) / ORDERED_STEPS.length) * 100 : 5;
-
   const completedSteps = new Set(steps.map((s) => s.step));
 
   return (
@@ -64,61 +50,65 @@ export default function LoadingScreen({
         alignItems: 'center',
         justifyContent: 'center',
         padding: '40px 24px',
-        minHeight: 'calc(100vh - 64px)',
+        minHeight: 'calc(100vh - 56px)',
         background: 'var(--bg-base)',
       }}
     >
       <div
         style={{
-          maxWidth: '640px',
+          maxWidth: '520px',
           width: '100%',
           textAlign: 'center',
         }}
         className="animate-fade-in"
       >
-        {/* Animated logo */}
+        {/* Sleek Terminal Header */}
         <div
           style={{
-            width: '80px',
-            height: '80px',
-            borderRadius: '24px',
-            background: 'var(--gradient-brand)',
+            width: '48px',
+            height: '48px',
+            borderRadius: '8px',
+            background: 'var(--bg-surface)',
+            border: '1px solid var(--border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            margin: '0 auto 32px',
-            fontSize: '36px',
-            boxShadow: 'var(--shadow-brand)',
-            animation: 'pulse-glow 2s ease-in-out infinite',
+            margin: '0 auto 24px',
           }}
         >
-          🔬
+          <Loader2
+            size={20}
+            color="var(--brand-light)"
+            style={{ animation: 'spin 1.5s linear infinite' }}
+          />
         </div>
 
         <h2
           style={{
-            fontSize: '28px',
-            fontWeight: 800,
+            fontSize: '22px',
+            fontWeight: 600,
             marginBottom: '8px',
+            letterSpacing: '-0.02em',
           }}
         >
-          Analyzing{' '}
-          <span className="gradient-text">{company}</span>
+          Analyzing <span style={{ color: 'var(--brand-light)' }}>{company}</span>
         </h2>
+        
         <p
           style={{
             color: 'var(--text-secondary)',
-            marginBottom: '32px',
-            fontSize: '15px',
+            marginBottom: '28px',
+            fontSize: '13px',
+            lineHeight: 1.5,
           }}
         >
           {message}
         </p>
 
-        {/* Progress bar */}
-        <div className="progress-bar" style={{ marginBottom: '8px', borderRadius: '4px' }}>
+        {/* Flat Progress Bar */}
+        <div className="progress-container" style={{ marginBottom: '8px' }}>
           <div
-            className="progress-fill"
+            className="progress-bar-fill"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -126,19 +116,20 @@ export default function LoadingScreen({
           style={{
             display: 'flex',
             justifyContent: 'space-between',
-            fontSize: '12px',
+            fontSize: '11px',
             color: 'var(--text-muted)',
-            marginBottom: '32px',
+            marginBottom: '24px',
+            fontFamily: 'var(--font-mono)',
           }}
         >
-          <span>{Math.round(progress)}%</span>
-          <span>⏱ {formatElapsed(elapsedMs)}</span>
+          <span>{Math.round(progress)}% COMPLETE</span>
+          <span>ELAPSED: {formatElapsed(elapsedMs)}</span>
         </div>
 
-        {/* Steps list */}
+        {/* Steps Card */}
         <div
           className="card"
-          style={{ textAlign: 'left', padding: '20px' }}
+          style={{ textAlign: 'left', padding: '16px 20px' }}
         >
           {ORDERED_STEPS.map((step, idx) => {
             const isDone = completedSteps.has(step) && step !== status;
@@ -152,35 +143,46 @@ export default function LoadingScreen({
                   display: 'flex',
                   alignItems: 'center',
                   gap: '12px',
-                  padding: '10px 0',
+                  padding: '8px 0',
                   borderBottom: idx < ORDERED_STEPS.length - 1 ? '1px solid var(--border)' : 'none',
-                  opacity: isPending ? 0.4 : 1,
-                  transition: 'opacity 0.3s',
+                  opacity: isPending ? 0.35 : 1,
+                  transition: 'opacity 0.2s ease',
                 }}
               >
-                {/* Icon */}
-                <div style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}>
-                  {STEP_ICONS[step]}
+                {/* Status Indicator */}
+                <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+                  {isDone ? (
+                    <CheckCircle size={14} color="var(--success)" />
+                  ) : isCurrent ? (
+                    <Loader2
+                      size={14}
+                      color="var(--brand-light)"
+                      style={{ animation: 'spin 1s linear infinite' }}
+                    />
+                  ) : (
+                    <Circle size={14} color="var(--border)" />
+                  )}
                 </div>
 
                 {/* Label */}
-                <div style={{ flex: 1, fontSize: '14px' }}>
-                  <span style={{ color: isCurrent ? 'var(--brand-light)' : isDone ? 'var(--text-secondary)' : 'var(--text-muted)', fontWeight: isCurrent ? 600 : 400 }}>
+                <div style={{ flex: 1, fontSize: '13px' }}>
+                  <span
+                    style={{
+                      color: isCurrent
+                        ? 'var(--text-primary)'
+                        : isDone
+                        ? 'var(--text-secondary)'
+                        : 'var(--text-muted)',
+                      fontWeight: isCurrent ? 500 : 400,
+                    }}
+                  >
                     {ANALYSIS_STEP_LABELS[step]}
                   </span>
                 </div>
 
-                {/* Status icon */}
-                <div>
-                  {isDone && <CheckCircle size={16} color="var(--success)" />}
-                  {isCurrent && (
-                    <Loader2
-                      size={16}
-                      color="var(--brand)"
-                      style={{ animation: 'spin 1s linear infinite' }}
-                    />
-                  )}
-                  {isPending && <Circle size={16} color="var(--border)" />}
+                {/* Index Indicator */}
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
+                  0{idx + 1}
                 </div>
               </div>
             );
@@ -189,12 +191,14 @@ export default function LoadingScreen({
 
         <p
           style={{
-            marginTop: '20px',
-            fontSize: '12px',
+            marginTop: '16px',
+            fontSize: '11px',
             color: 'var(--text-muted)',
+            textTransform: 'uppercase',
+            letterSpacing: '0.05em',
           }}
         >
-          Running 9-node LangGraph AI pipeline · Please wait
+          LangGraph Pipeline Executing in Isolated Environment
         </p>
       </div>
     </main>
