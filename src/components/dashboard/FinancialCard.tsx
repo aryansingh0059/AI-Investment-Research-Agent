@@ -53,7 +53,7 @@ export default function FinancialCard({ financialData }: FinancialCardProps) {
     return (
       <div className="card animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 700, marginBottom: '12px' }}>Financial Analysis</h2>
-        <p style={{ color: 'var(--text-muted)' }}>Financial data unavailable. Please add FMP_API_KEY and FINNHUB_API_KEY.</p>
+        <p style={{ color: 'var(--text-muted)' }}>Financial data unavailable. Yahoo Finance could not return statements for this symbol.</p>
       </div>
     );
   }

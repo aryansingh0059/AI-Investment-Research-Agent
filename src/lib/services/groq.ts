@@ -2,11 +2,14 @@
  * Groq API service (OpenAI-compatible)
  * Docs: https://console.groq.com/docs/openai
  * Used as fallback when Gemini is unavailable or fails.
+ *
+ * Model: llama-3.3-70b-versatile — best quality within free-tier limits.
+ * Max output tokens: 2048 to stay safely below Groq's free-tier limits.
  */
 import { REQUEST_TIMEOUT } from '@/constants';
 
 const BASE_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const GROQ_MODEL = 'llama-3.1-8b-instant';
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
 
 export async function generateWithGroq(
   systemPrompt: string,
@@ -27,7 +30,7 @@ export async function generateWithGroq(
         { role: 'user', content: userMessage },
       ],
       temperature,
-      max_tokens: 8192,
+      max_tokens: 2048,
       response_format: { type: 'json_object' },
     };
 

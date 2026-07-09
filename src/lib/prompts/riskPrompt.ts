@@ -2,40 +2,18 @@ import { JSON_FORMAT_REMINDER } from './systemPrompt';
 
 export function buildRiskPrompt(data: {
   company: string;
-  profile: string;
-  financials: string;
-  webInsights: string;
+  companySummary: string;
+  financialSummary: string;
+  webSummary: string;
 }): string {
-  return `Analyze the investment risks for ${data.company} based on the following data.
+  return `Assess investment risks for: ${data.company}
 
-COMPANY PROFILE:
-${data.profile}
+COMPANY: ${data.companySummary}
+FINANCIALS: ${data.financialSummary}
+WEB: ${data.webSummary}
 
-FINANCIAL DATA:
-${data.financials}
+Rate each category (Market, Business, Debt, Regulatory, Competition, Geographical, Technology) as low/medium/high with a 1-sentence evidence-based description.
 
-WEB RESEARCH:
-${data.webInsights}
-
-Assess risks across these categories:
-- Market Risk (macroeconomic exposure)
-- Business Risk (operational, competitive)
-- Debt Risk (leverage, solvency)
-- Regulatory Risk (compliance, legal)
-- Competition Risk (market share threats)
-- Geographical Risk (geographic concentration)
-- Technology Risk (disruption, obsolescence)
-
-Return this exact JSON structure:
-{
-  "risks": [
-    {
-      "category": "Market Risk",
-      "level": "low" | "medium" | "high",
-      "description": "Specific, evidence-based description"
-    },
-    ...
-  ]
-}
+Return JSON: {"risks":[{"category":"string","level":"low"|"medium"|"high","description":"string"}]}
 ${JSON_FORMAT_REMINDER}`;
 }

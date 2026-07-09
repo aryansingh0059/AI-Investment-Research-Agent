@@ -27,20 +27,19 @@ function buildFallbackSWOT(state: GraphState): SWOTAnalysis {
     weaknesses.push('Slow revenue growth may indicate market saturation or competitive pressure');
   }
 
-  // Generic SWOT if insufficient data
   if (strengths.length === 0) strengths.push('Established market presence and brand recognition');
-  if (weaknesses.length === 0) weaknesses.push('Insufficient data to assess specific weaknesses');
+  if (weaknesses.length === 0) weaknesses.push('Requires further analysis to identify specific weaknesses');
   opportunities.push('Digital transformation and AI adoption opportunities');
   opportunities.push('Potential for geographic expansion into emerging markets');
   threats.push('Macroeconomic uncertainty and interest rate risk');
-  threats.push('Increasing competition from both established players and disruptors');
+  threats.push('Increasing competition from established players and disruptors');
 
   return { strengths, weaknesses, opportunities, threats };
 }
 
 /**
  * Node 8: SWOT Generator
- * Uses AI to generate a comprehensive SWOT analysis.
+ * Uses compact summary strings to reduce token usage.
  */
 export async function swotGeneratorNode(
   state: GraphState
@@ -48,41 +47,17 @@ export async function swotGeneratorNode(
   console.log('[Node] swotGenerator:', state.company);
 
   try {
-    const profile = state.companyProfile
-      ? JSON.stringify({
-          symbol: state.companyProfile.symbol,
-          name: state.companyProfile.name,
-          industry: state.companyProfile.industry,
-          marketCap: state.companyProfile.marketCap,
-        }, null, 2)
-      : 'Not available';
-
-    const financials = state.financialData
-      ? JSON.stringify({
-          latestRevenue: state.financialData.latestRevenue,
-          latestNetIncome: state.financialData.latestNetIncome,
-          metrics: state.financialData.metrics,
-        }, null, 2)
-      : 'Not available';
-
-    const news = state.news.length > 0
-      ? state.news.slice(0, 3).map((n) => `• ${n.title} (${n.sentiment})`).join('\n')
-      : 'Not available';
-
-    const webInsights = state.webInsights.length > 0
-      ? state.webInsights.slice(0, 3).map((w) => `• ${w.title}: ${w.content.slice(0, 120)}`).join('\n')
-      : 'Not available';
-
-    const competitors = state.competitors.length > 0
-      ? state.competitors.slice(0, 3).map((c) => `${c.symbol}`).join(', ')
-      : 'Not available';
+    const competitors =
+      state.competitors.length > 0
+        ? state.competitors.slice(0, 3).map((c) => c.symbol).join(', ')
+        : 'Not available';
 
     const prompt = buildSWOTPrompt({
       company: state.company,
-      profile,
-      financials,
-      news,
-      webInsights,
+      companySummary: state.companySummary ?? 'Not available',
+      financialSummary: state.financialSummary ?? 'Not available',
+      newsSummary: state.newsSummary ?? 'Not available',
+      webSummary: state.webSummary ?? 'Not available',
       competitors,
     });
 
@@ -97,7 +72,7 @@ export async function swotGeneratorNode(
 
     return {
       swot: buildFallbackSWOT(state),
-      errors: [...state.errors, 'SWOT used rule-based fallback (Gemini and Groq both unavailable)'],
+      errors: [...state.errors, 'SWOT used rule-based fallback'],
     };
   } catch (err) {
     const msg = `SWOT generation failed: ${String(err)}`;

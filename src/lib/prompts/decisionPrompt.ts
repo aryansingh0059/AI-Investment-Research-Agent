@@ -2,64 +2,42 @@ import { JSON_FORMAT_REMINDER } from './systemPrompt';
 
 export function buildDecisionPrompt(data: {
   company: string;
-  profile: string;
-  financials: string;
-  news: string;
-  webInsights: string;
+  companySummary: string;
+  financialSummary: string;
+  newsSummary: string;
+  webSummary: string;
+  competitors: string;
   swot: string;
   risks: string;
   growthFactors: string;
-  competitors: string;
-  newsSentiment: string;
+  sentiment: string;
 }): string {
-  return `You are making a final investment recommendation for ${data.company}.
-Synthesize ALL the information below and produce a comprehensive investment report.
+  return `Investment analysis for: ${data.company}
 
-COMPANY PROFILE:
-${data.profile}
+COMPANY: ${data.companySummary}
 
-FINANCIAL DATA:
-${data.financials}
+FINANCIALS: ${data.financialSummary}
 
-RECENT NEWS:
-${data.news}
+NEWS (sentiment: ${data.sentiment}):
+${data.newsSummary}
 
-NEWS SENTIMENT:
-${data.newsSentiment}
+WEB INSIGHTS:
+${data.webSummary}
 
-WEB RESEARCH:
-${data.webInsights}
+COMPETITORS: ${data.competitors}
 
-COMPETITORS:
-${data.competitors}
-
-SWOT ANALYSIS:
+SWOT:
 ${data.swot}
 
-RISK ANALYSIS:
+RISKS:
 ${data.risks}
 
-GROWTH ANALYSIS:
+GROWTH:
 ${data.growthFactors}
 
-SCORING GUIDELINES:
-- investmentScore (0–100): Overall attractiveness. >70 = INVEST, 40–70 = WATCH, <40 = PASS
-- financialHealth (0–100): Balance sheet quality, profitability, cash generation
-- riskScore (0–100): Risk-adjusted score. Higher = safer (less risky). <40 = high risk
-- growthScore (0–100): Forward-looking growth potential
-- confidence (0–100): Reflects data completeness and quality. Missing APIs = lower confidence.
+Score guidelines: investmentScore >70=INVEST, 40-70=WATCH, <40=PASS. riskScore: higher=safer.
 
-Return this exact JSON structure:
-{
-  "company": "${data.company}",
-  "recommendation": "INVEST" | "WATCH" | "PASS",
-  "confidence": number,
-  "investmentScore": number,
-  "financialHealth": number,
-  "riskScore": number,
-  "growthScore": number,
-  "summary": "2-3 sentence executive summary",
-  "reasoning": "Detailed 5-8 paragraph reasoning explaining the recommendation with specific evidence from the data. Cover: financial health assessment, growth catalysts, risks identified, competitive position, valuation, and final recommendation rationale."
-}
+Return JSON:
+{"company":"${data.company}","recommendation":"INVEST"|"WATCH"|"PASS","confidence":0-100,"investmentScore":0-100,"financialHealth":0-100,"riskScore":0-100,"growthScore":0-100,"summary":"2-3 sentence executive summary","reasoning":"5-6 paragraph analysis covering: financial health, growth catalysts, risks, competitive position, valuation, final rationale."}
 ${JSON_FORMAT_REMINDER}`;
 }

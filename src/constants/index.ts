@@ -1,5 +1,4 @@
 export const FINNHUB_BASE = 'https://finnhub.io/api/v1';
-export const FMP_BASE = 'https://financialmodelingprep.com/api/v3';
 export const NEWSAPI_BASE = 'https://newsapi.org/v2';
 export const TAVILY_BASE = 'https://api.tavily.com';
 

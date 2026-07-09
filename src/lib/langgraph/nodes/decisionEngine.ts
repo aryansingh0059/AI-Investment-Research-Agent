@@ -15,7 +15,6 @@ function calculateFallbackScores(state: GraphState): {
 } {
   const { financialData, newsSentiment, risks, growthFactors, dataQuality } = state;
 
-  // Financial health score
   let financialHealth = 50;
   if (financialData?.metrics) {
     const m = financialData.metrics;
@@ -26,14 +25,12 @@ function calculateFallbackScores(state: GraphState): {
   }
   financialHealth = Math.max(0, Math.min(100, financialHealth));
 
-  // Risk score (higher = safer)
   let riskScore = 60;
   const highRisks = risks.filter((r) => r.level === 'high').length;
   const mediumRisks = risks.filter((r) => r.level === 'medium').length;
   riskScore -= highRisks * 12 + mediumRisks * 5;
   riskScore = Math.max(0, Math.min(100, riskScore));
 
-  // Growth score
   let growthScore = 50;
   const highGrowth = growthFactors.filter((g) => g.impact === 'high').length;
   const mediumGrowth = growthFactors.filter((g) => g.impact === 'medium').length;
@@ -43,17 +40,14 @@ function calculateFallbackScores(state: GraphState): {
   }
   growthScore = Math.max(0, Math.min(100, growthScore));
 
-  // Sentiment adjustment
   let sentimentBonus = 0;
   if (newsSentiment?.overall === 'positive') sentimentBonus = 8;
   else if (newsSentiment?.overall === 'negative') sentimentBonus = -8;
 
-  // Investment score
   const investmentScore = Math.round(
     financialHealth * 0.35 + growthScore * 0.25 + riskScore * 0.2 + (50 + sentimentBonus) * 0.1 + 50 * 0.1
   );
 
-  // Confidence based on data quality
   const dataPoints = Object.values(dataQuality).filter(Boolean).length;
   const confidence = Math.round((dataPoints / 5) * 100);
 
@@ -68,35 +62,7 @@ function calculateFallbackScores(state: GraphState): {
       : 'Current risk-reward profile does not favor investment at this time.'
   }`;
 
-  const reasoning = `Based on available data, ${state.company} has been assessed across multiple dimensions:
-
-Financial Health (${financialHealth}/100): ${
-    financialHealth >= 70
-      ? 'The company demonstrates strong financial metrics including healthy margins and manageable debt levels.'
-      : financialHealth >= 50
-      ? 'Financial metrics show moderate strength with some areas of concern.'
-      : 'Financial health indicators reveal challenges that investors should carefully consider.'
-  }
-
-Risk Assessment (${riskScore}/100): ${
-    riskScore >= 70
-      ? 'Risk profile is favorable with most risk categories at low-to-medium levels.'
-      : riskScore >= 50
-      ? 'Moderate risk environment with several factors requiring monitoring.'
-      : 'Elevated risk factors across multiple categories warrant caution.'
-  }
-
-Growth Outlook (${growthScore}/100): ${
-    growthScore >= 70
-      ? 'Multiple high-impact growth catalysts identified across expansion, innovation, and market opportunities.'
-      : growthScore >= 50
-      ? 'Moderate growth prospects supported by market expansion and operational improvements.'
-      : 'Limited near-term growth catalysts with potential headwinds.'
-  }
-
-News Sentiment: ${newsSentiment?.overall ?? 'neutral'} (${newsSentiment?.positiveCount ?? 0} positive, ${newsSentiment?.negativeCount ?? 0} negative articles).
-
-Note: This analysis was generated using rule-based scoring due to limited AI availability. For more nuanced insights, ensure all API keys are configured.`;
+  const reasoning = `Rule-based analysis: Financial Health ${financialHealth}/100, Risk ${riskScore}/100, Growth ${growthScore}/100. News sentiment: ${newsSentiment?.overall ?? 'neutral'}. Note: AI providers unavailable; configure GEMINI_API_KEY or GROQ_API_KEY for deeper analysis.`;
 
   return {
     recommendation,
@@ -108,7 +74,8 @@ Note: This analysis was generated using rule-based scoring due to limited AI ava
 
 /**
  * Node 9: Decision Engine
- * The final node — synthesizes all data and produces the investment recommendation.
+ * Synthesizes all summaries and produces the final investment recommendation.
+ * Uses only compact summary strings — never raw API responses.
  */
 export async function decisionEngineNode(
   state: GraphState
@@ -116,62 +83,54 @@ export async function decisionEngineNode(
   console.log('[Node] decisionEngine:', state.company);
 
   try {
-    const profile = state.companyProfile
-      ? JSON.stringify({
-          symbol: state.companyProfile.symbol,
-          name: state.companyProfile.name,
-          industry: state.companyProfile.industry,
-          marketCap: state.companyProfile.marketCap,
-          currentPrice: state.companyProfile.currentPrice,
-          ceo: state.companyProfile.ceo,
-        }, null, 2)
+    const competitors =
+      state.competitors.length > 0
+        ? state.competitors
+            .slice(0, 3)
+            .map((c) => `${c.symbol}${c.marketCap ? ` (MCap: $${(c.marketCap / 1e9).toFixed(1)}B)` : ''}`)
+            .join(', ')
+        : 'Not available';
+
+    const swot = state.swot
+      ? [
+          `Strengths: ${state.swot.strengths.slice(0, 3).join('; ')}`,
+          `Weaknesses: ${state.swot.weaknesses.slice(0, 3).join('; ')}`,
+          `Opportunities: ${state.swot.opportunities.slice(0, 2).join('; ')}`,
+          `Threats: ${state.swot.threats.slice(0, 2).join('; ')}`,
+        ].join('\n')
       : 'Not available';
 
-    const financials = state.financialData
-      ? JSON.stringify({
-          latestRevenue: state.financialData.latestRevenue,
-          latestNetIncome: state.financialData.latestNetIncome,
-          latestEPS: state.financialData.latestEPS,
-          latestFreeCashFlow: state.financialData.latestFreeCashFlow,
-          totalDebt: state.financialData.totalDebt,
-          cash: state.financialData.cash,
-          metrics: state.financialData.metrics,
-          incomeStatements: (state.financialData.incomeStatements || []).slice(0, 2),
-        }, null, 2)
-      : 'Not available';
+    const risks =
+      state.risks.length > 0
+        ? state.risks
+            .slice(0, 5)
+            .map((r) => `${r.category}: ${r.level.toUpperCase()} — ${r.description}`)
+            .join('\n')
+        : 'Not available';
 
-    const news = state.news.length > 0
-      ? state.news.slice(0, 3).map((n) => `• [${n.sentiment?.toUpperCase()}] ${n.title}`).join('\n')
-      : 'Not available';
+    const growthFactors =
+      state.growthFactors.length > 0
+        ? state.growthFactors
+            .slice(0, 4)
+            .map((g) => `${g.category} (${g.impact}): ${g.description}`)
+            .join('\n')
+        : 'Not available';
 
-    const webInsights = state.webInsights.length > 0
-      ? state.webInsights.slice(0, 3).map((w) => `• ${w.title}: ${w.content.slice(0, 120)}`).join('\n')
-      : 'Not available';
-
-    const competitors = state.competitors.length > 0
-      ? state.competitors.slice(0, 3).map((c) => `${c.symbol} (MCap: ${c.marketCap})`).join(', ')
-      : 'Not available';
-
-    const swot = state.swot ? JSON.stringify(state.swot, null, 2) : 'Not available';
-    const risks = state.risks.length > 0 ? JSON.stringify(state.risks.slice(0, 4), null, 2) : 'Not available';
-    const growthFactors = state.growthFactors.length > 0
-      ? JSON.stringify(state.growthFactors.slice(0, 4), null, 2)
-      : 'Not available';
-    const newsSentiment = state.newsSentiment
-      ? JSON.stringify(state.newsSentiment, null, 2)
-      : 'Not available';
+    const sentiment = state.newsSentiment
+      ? `${state.newsSentiment.overall} (+${state.newsSentiment.positiveCount} -${state.newsSentiment.negativeCount} =${state.newsSentiment.neutralCount})`
+      : 'neutral';
 
     const prompt = buildDecisionPrompt({
       company: state.company,
-      profile,
-      financials,
-      news,
-      webInsights,
+      companySummary: state.companySummary ?? 'Not available',
+      financialSummary: state.financialSummary ?? 'Not available',
+      newsSummary: state.newsSummary ?? 'Not available',
+      webSummary: state.webSummary ?? 'Not available',
       competitors,
       swot,
       risks,
       growthFactors,
-      newsSentiment,
+      sentiment,
     });
 
     const aiResult = await generateWithAI(SYSTEM_PROMPT, prompt, 0.1);
@@ -196,11 +155,10 @@ export async function decisionEngineNode(
       }
     }
 
-    // Fallback to rule-based scoring
     const fallback = calculateFallbackScores(state);
     return {
       ...fallback,
-      errors: [...state.errors, 'Decision engine used rule-based fallback (Gemini and Groq both unavailable)'],
+      errors: [...state.errors, 'Decision engine used rule-based fallback (AI providers unavailable)'],
     };
   } catch (err) {
     const msg = `Decision engine failed: ${String(err)}`;

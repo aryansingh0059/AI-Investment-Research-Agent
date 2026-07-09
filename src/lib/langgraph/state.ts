@@ -24,10 +24,10 @@ export interface GraphState {
   /** Resolved stock ticker symbol */
   symbol?: string;
 
-  /** Company profile data from Finnhub */
+  /** Company profile data from Yahoo Finance + Finnhub (for logo) */
   companyProfile?: CompanyProfile;
 
-  /** Financial statements and metrics from FMP + Finnhub */
+  /** Financial statements and metrics from Yahoo Finance */
   financialData?: FinancialData;
 
   /** News articles from NewsAPI */
@@ -68,6 +68,20 @@ export interface GraphState {
 
   /** Accumulated non-fatal errors */
   errors: string[];
+
+  // ─── Compact summaries (used by downstream nodes to reduce token usage) ────
+
+  /** Compact company + market data string for AI prompts */
+  companySummary?: string;
+
+  /** Compact financial metrics string for AI prompts */
+  financialSummary?: string;
+
+  /** Top-5 news headline bullets for AI prompts */
+  newsSummary?: string;
+
+  /** Top-3 web search result bullets for AI prompts */
+  webSummary?: string;
 }
 
 /** Initial state factory */

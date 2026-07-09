@@ -1,14 +1,12 @@
 import type { GraphState } from '../state';
-import { getFinancialData } from '@/lib/services/fmp';
-import { getFinancialMetrics } from '@/lib/services/finnhub';
-import { generateWithAI } from '@/lib/services/ai';
-import type { FinancialData } from '@/types/financial';
+import { getFinancialData } from '@/lib/services/yahooFinanceService';
+import { formatCurrency, formatPercent } from '@/lib/utils/formatters';
 
 /**
  * Node 2: Financial Analysis
- * Fetches income statement, balance sheet, cash flow from FMP
- * and financial ratios from Finnhub.
- * Falls back to AI financial lookup if FMP API returns 403/errors.
+ * Fetches income statements, balance sheets, and cash flow from Yahoo Finance.
+ * Always fetches the latest 4 fiscal years sorted chronologically.
+ * Produces `financialSummary` string for downstream AI nodes.
  */
 export async function financialAnalysisNode(
   state: GraphState
@@ -23,119 +21,55 @@ export async function financialAnalysisNode(
   }
 
   try {
-    let [financialData, metrics] = await Promise.all([
-      getFinancialData(state.symbol),
-      getFinancialMetrics(state.symbol),
-    ]);
+    const financialData = await getFinancialData(state.symbol);
 
-    // Check if FMP failed (indicated by empty statement arrays due to 403 or other API errors)
-    const isFmpUnavailable = !financialData || financialData.incomeStatements.length === 0;
-
-    if (isFmpUnavailable) {
-      console.log('[Node] financialAnalysis: FMP returned empty or failed. Resolving via AI...');
-      errors.push('FMP API returned 403/Forbidden. Using AI-based financial data lookup fallback.');
-
-      try {
-        const companyName = state.companyProfile?.name ?? state.company;
-        const prompt = `Retrieve the annual financial statements for "${companyName}" (ticker: ${state.symbol}) for the last 3 fiscal years (e.g. 2024, 2023, 2022).
-Provide values in standard numbers (not strings, and not abbreviated - e.g. use 383930000000 instead of "383.93B").
-Make sure values like revenue, netIncome, and freeCashFlow are accurate.
-
-Return ONLY a JSON object with this exact structure:
-{
-  "incomeStatements": [
-    {
-      "date": "YYYY-MM-DD",
-      "revenue": number,
-      "netIncome": number,
-      "grossProfit": number,
-      "operatingIncome": number,
-      "eps": number,
-      "ebitda": number
-    }
-  ],
-  "balanceSheets": [
-    {
-      "date": "YYYY-MM-DD",
-      "totalAssets": number,
-      "totalLiabilities": number,
-      "totalEquity": number,
-      "cash": number,
-      "totalDebt": number,
-      "shortTermDebt": number,
-      "longTermDebt": number
-    }
-  ],
-  "cashFlows": [
-    {
-      "date": "YYYY-MM-DD",
-      "operatingCashFlow": number,
-      "freeCashFlow": number,
-      "capitalExpenditure": number,
-      "dividendsPaid": number
-    }
-  ]
-}`;
-
-        const aiResult = await generateWithAI(
-          'You are a professional financial analyst. Return JSON only.',
-          prompt,
-          0.1
-        );
-
-        if (aiResult && aiResult.text.trim()) {
-          let cleaned = aiResult.text.trim();
-          if (cleaned.includes('```')) {
-            cleaned = cleaned.replace(/```json|```/g, '').trim();
-          }
-          const parsed = JSON.parse(cleaned);
-          
-          if (parsed && Array.isArray(parsed.incomeStatements) && parsed.incomeStatements.length > 0) {
-            const latestInc = parsed.incomeStatements[0];
-            const latestBal = parsed.balanceSheets?.[0];
-            const latestCF = parsed.cashFlows?.[0];
-
-            financialData = {
-              incomeStatements: parsed.incomeStatements,
-              balanceSheets: parsed.balanceSheets || [],
-              cashFlows: parsed.cashFlows || [],
-              metrics: {},
-              latestRevenue: latestInc?.revenue || undefined,
-              latestNetIncome: latestInc?.netIncome || undefined,
-              latestEPS: latestInc?.eps || undefined,
-              latestFreeCashFlow: latestCF?.freeCashFlow || undefined,
-              totalDebt: latestBal?.totalDebt || undefined,
-              cash: latestBal?.cash || undefined,
-            };
-            console.log('[Node] financialAnalysis: Successfully resolved financial statements via AI.');
-          }
-        }
-      } catch (aiErr) {
-        console.error('Failed to resolve financial statements via AI:', aiErr);
-        errors.push(`AI financial lookup failed: ${String(aiErr)}`);
-      }
-    }
-
-    if (!financialData) {
-      financialData = {
-        incomeStatements: [],
-        balanceSheets: [],
-        cashFlows: [],
-        metrics: {},
+    if (!financialData || financialData.incomeStatements.length === 0) {
+      errors.push('Yahoo Finance returned no financial statements for this symbol.');
+      return {
+        financialData: {
+          incomeStatements: [],
+          balanceSheets: [],
+          cashFlows: [],
+          metrics: {},
+        },
+        dataQuality: { ...state.dataQuality, hasFinancialData: false },
+        errors: [...state.errors, ...errors],
       };
     }
 
-    // Merge Finnhub metrics into financial data
-    const mergedData = {
-      ...financialData,
-      metrics: { ...financialData.metrics, ...metrics },
-    };
+    const m = financialData.metrics;
+    const { latestRevenue, latestNetIncome, latestEPS, latestFreeCashFlow, totalDebt, cash } = financialData;
+
+    // ── Build compact financialSummary for AI prompts ────────────────────────
+    const financialSummary = [
+      `Revenue: ${formatCurrency(latestRevenue)}`,
+      `Net Income: ${formatCurrency(latestNetIncome)}`,
+      `EPS: ${latestEPS != null ? `$${latestEPS.toFixed(2)}` : 'N/A'}`,
+      `Free Cash Flow: ${formatCurrency(latestFreeCashFlow)}`,
+      `Cash: ${formatCurrency(cash)}`,
+      `Total Debt: ${formatCurrency(totalDebt)}`,
+      m.peRatio != null ? `P/E: ${m.peRatio.toFixed(1)}` : '',
+      m.revenueGrowthYoy != null ? `Revenue Growth YoY: ${formatPercent(m.revenueGrowthYoy)}` : '',
+      m.netMargin != null ? `Net Margin: ${formatPercent(m.netMargin)}` : '',
+      m.operatingMargin != null ? `Op Margin: ${formatPercent(m.operatingMargin)}` : '',
+      m.roe != null ? `ROE: ${formatPercent(m.roe)}` : '',
+      m.roa != null ? `ROA: ${formatPercent(m.roa)}` : '',
+      m.debtToEquity != null ? `D/E: ${m.debtToEquity.toFixed(2)}` : '',
+      m.currentRatio != null ? `Current Ratio: ${m.currentRatio.toFixed(2)}` : '',
+      m.dividendYield != null ? `Dividend Yield: ${formatPercent(m.dividendYield)}` : '',
+      m.beta != null ? `Beta: ${m.beta.toFixed(2)}` : '',
+    ]
+      .filter(Boolean)
+      .join(' | ');
+
+    console.log(`[Node] financialAnalysis: fetched ${financialData.incomeStatements.length} years of data`);
 
     return {
-      financialData: mergedData,
-      dataQuality: { 
-        ...state.dataQuality, 
-        hasFinancialData: mergedData.incomeStatements.length > 0 
+      financialData,
+      financialSummary,
+      dataQuality: {
+        ...state.dataQuality,
+        hasFinancialData: financialData.incomeStatements.length > 0,
       },
       errors: [...state.errors, ...errors],
     };

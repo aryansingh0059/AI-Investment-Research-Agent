@@ -34,7 +34,7 @@ function buildFallbackGrowth(state: GraphState): GrowthFactor[] {
 
 /**
  * Node 7: Growth Analysis
- * Uses AI to identify growth catalysts and opportunities.
+ * Uses compact summary strings to reduce token usage.
  */
 export async function growthAnalysisNode(
   state: GraphState
@@ -42,35 +42,12 @@ export async function growthAnalysisNode(
   console.log('[Node] growthAnalysis:', state.company);
 
   try {
-    const profile = state.companyProfile
-      ? JSON.stringify({
-          symbol: state.companyProfile.symbol,
-          name: state.companyProfile.name,
-          industry: state.companyProfile.industry,
-        }, null, 2)
-      : 'Not available';
-
-    const financials = state.financialData
-      ? JSON.stringify({
-          latestRevenue: state.financialData.latestRevenue,
-          metrics: state.financialData.metrics,
-        }, null, 2)
-      : 'Not available';
-
-    const webInsights = state.webInsights.length > 0
-      ? state.webInsights.slice(0, 3).map((w) => `• ${w.title}: ${w.content.slice(0, 120)}`).join('\n')
-      : 'Not available';
-
-    const news = state.news.length > 0
-      ? state.news.slice(0, 3).map((n) => `• ${n.title}`).join('\n')
-      : 'Not available';
-
     const prompt = buildGrowthPrompt({
       company: state.company,
-      profile,
-      financials,
-      webInsights,
-      news,
+      companySummary: state.companySummary ?? 'Not available',
+      financialSummary: state.financialSummary ?? 'Not available',
+      webSummary: state.webSummary ?? 'Not available',
+      newsSummary: state.newsSummary ?? 'Not available',
     });
 
     const aiResult = await generateWithAI(SYSTEM_PROMPT, prompt);
@@ -84,7 +61,7 @@ export async function growthAnalysisNode(
 
     return {
       growthFactors: buildFallbackGrowth(state),
-      errors: [...state.errors, 'Growth analysis used rule-based fallback (Gemini and Groq both unavailable)'],
+      errors: [...state.errors, 'Growth analysis used rule-based fallback'],
     };
   } catch (err) {
     const msg = `Growth analysis failed: ${String(err)}`;

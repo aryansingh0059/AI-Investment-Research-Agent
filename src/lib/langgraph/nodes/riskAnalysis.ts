@@ -9,7 +9,6 @@ function buildFallbackRisks(state: GraphState): RiskFactor[] {
   const risks: RiskFactor[] = [];
   const { financialData } = state;
 
-  // Debt risk
   if (financialData?.totalDebt && financialData?.latestRevenue) {
     const debtRatio = financialData.totalDebt / financialData.latestRevenue;
     risks.push({
@@ -19,7 +18,6 @@ function buildFallbackRisks(state: GraphState): RiskFactor[] {
     });
   }
 
-  // Add generic risks for all categories not covered
   const covered = new Set(risks.map((r) => r.category));
   RISK_CATEGORIES.forEach((cat) => {
     if (!covered.has(cat)) {
@@ -36,7 +34,7 @@ function buildFallbackRisks(state: GraphState): RiskFactor[] {
 
 /**
  * Node 6: Risk Analysis
- * Uses AI to assess risks across 7 categories.
+ * Uses compact summary strings to reduce token usage.
  */
 export async function riskAnalysisNode(
   state: GraphState
@@ -44,31 +42,11 @@ export async function riskAnalysisNode(
   console.log('[Node] riskAnalysis:', state.company);
 
   try {
-    const profile = state.companyProfile
-      ? JSON.stringify({
-          symbol: state.companyProfile.symbol,
-          name: state.companyProfile.name,
-          industry: state.companyProfile.industry,
-        }, null, 2)
-      : 'Not available';
-    const financials = state.financialData
-      ? JSON.stringify({
-          latestRevenue: state.financialData.latestRevenue,
-          latestNetIncome: state.financialData.latestNetIncome,
-          totalDebt: state.financialData.totalDebt,
-          cash: state.financialData.cash,
-          metrics: state.financialData.metrics,
-        }, null, 2)
-      : 'Not available';
-    const webInsights = state.webInsights.length > 0
-      ? state.webInsights.slice(0, 3).map((w) => `• ${w.title}: ${w.content.slice(0, 120)}`).join('\n')
-      : 'Not available';
-
     const prompt = buildRiskPrompt({
       company: state.company,
-      profile,
-      financials,
-      webInsights,
+      companySummary: state.companySummary ?? 'Not available',
+      financialSummary: state.financialSummary ?? 'Not available',
+      webSummary: state.webSummary ?? 'Not available',
     });
 
     const aiResult = await generateWithAI(SYSTEM_PROMPT, prompt);
@@ -80,10 +58,9 @@ export async function riskAnalysisNode(
       }
     }
 
-    // Fallback to rule-based if both AI providers unavailable
     return {
       risks: buildFallbackRisks(state),
-      errors: [...state.errors, 'Risk analysis used rule-based fallback (Gemini and Groq both unavailable)'],
+      errors: [...state.errors, 'Risk analysis used rule-based fallback'],
     };
   } catch (err) {
     const msg = `Risk analysis failed: ${String(err)}`;

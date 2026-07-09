@@ -2,43 +2,20 @@ import { JSON_FORMAT_REMINDER } from './systemPrompt';
 
 export function buildGrowthPrompt(data: {
   company: string;
-  profile: string;
-  financials: string;
-  webInsights: string;
-  news: string;
+  companySummary: string;
+  financialSummary: string;
+  webSummary: string;
+  newsSummary: string;
 }): string {
-  return `Analyze the growth prospects for ${data.company} based on the following data.
+  return `Identify growth catalysts for: ${data.company}
 
-COMPANY PROFILE:
-${data.profile}
+COMPANY: ${data.companySummary}
+FINANCIALS: ${data.financialSummary}
+WEB: ${data.webSummary}
+NEWS: ${data.newsSummary}
 
-FINANCIAL DATA:
-${data.financials}
+Identify growth factors across: Revenue Growth, Market Expansion, Innovation, AI & Technology, Strategic Partnerships, Competitive Positioning. Rate each as low/medium/high impact.
 
-WEB RESEARCH INSIGHTS:
-${data.webInsights}
-
-RECENT NEWS:
-${data.news}
-
-Identify and describe growth factors across these categories:
-- Revenue Growth (historical trends, projections)
-- Market Expansion (new markets, geographies)
-- Innovation (new products, R&D, patents)
-- AI & Technology Initiatives
-- Strategic Partnerships & Acquisitions
-- Competitive Positioning
-
-Return this exact JSON structure:
-{
-  "growthFactors": [
-    {
-      "category": "Revenue Growth",
-      "description": "Specific description with supporting evidence",
-      "impact": "low" | "medium" | "high"
-    },
-    ...
-  ]
-}
+Return JSON: {"growthFactors":[{"category":"string","description":"string","impact":"low"|"medium"|"high"}]}
 ${JSON_FORMAT_REMINDER}`;
 }

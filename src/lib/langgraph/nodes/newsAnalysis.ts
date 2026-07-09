@@ -20,10 +20,8 @@ function scoreSentiment(text: string): { label: SentimentLabel; score: number } 
   positive.forEach((w) => { if (lower.includes(w)) score += 1; });
   negative.forEach((w) => { if (lower.includes(w)) score -= 1; });
 
-  // Normalize to -1..1
   const maxWords = Math.max(positive.length, negative.length);
   const normalized = Math.max(-1, Math.min(1, score / (maxWords * 0.3)));
-
   const label: SentimentLabel =
     normalized > 0.1 ? 'positive' : normalized < -0.1 ? 'negative' : 'neutral';
 
@@ -32,7 +30,8 @@ function scoreSentiment(text: string): { label: SentimentLabel; score: number } 
 
 /**
  * Node 3: News Analysis
- * Fetches latest news and scores sentiment per article.
+ * Fetches top 5 news articles and scores sentiment.
+ * Produces `newsSummary` string for downstream AI nodes.
  */
 export async function newsAnalysisNode(
   state: GraphState
@@ -40,10 +39,11 @@ export async function newsAnalysisNode(
   console.log('[Node] newsAnalysis:', state.company);
 
   try {
-    const rawArticles = await getCompanyNews(state.company, 8);
+    // Only fetch top 5 articles — enough context, much fewer tokens
+    const rawArticles = await getCompanyNews(state.company, 5);
 
     const articles: NewsArticle[] = rawArticles.map((a) => {
-      const text = `${a.title} ${a.description ?? ''} ${a.content ?? ''}`;
+      const text = `${a.title} ${a.description ?? ''}`;
       const { label, score } = scoreSentiment(text);
       return { ...a, sentiment: label, sentimentScore: score };
     });
@@ -68,9 +68,21 @@ export async function newsAnalysisNode(
       averageScore,
     };
 
+    // ── Build compact newsSummary for AI prompts ─────────────────────────────
+    const newsSummary =
+      articles.length > 0
+        ? articles
+            .map(
+              (a) =>
+                `• [${(a.sentiment ?? 'neutral').toUpperCase()}] ${a.title} (${a.source})`
+            )
+            .join('\n')
+        : 'No recent news available.';
+
     return {
       news: articles,
       newsSentiment,
+      newsSummary,
       dataQuality: { ...state.dataQuality, hasNews: articles.length > 0 },
       errors: [...state.errors],
     };

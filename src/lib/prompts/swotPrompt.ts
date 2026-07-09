@@ -2,37 +2,22 @@ import { JSON_FORMAT_REMINDER } from './systemPrompt';
 
 export function buildSWOTPrompt(data: {
   company: string;
-  profile: string;
-  financials: string;
-  news: string;
-  webInsights: string;
+  companySummary: string;
+  financialSummary: string;
+  newsSummary: string;
+  webSummary: string;
   competitors: string;
 }): string {
-  return `Analyze the following data about ${data.company} and generate a comprehensive SWOT analysis.
+  return `Generate SWOT analysis for: ${data.company}
 
-COMPANY PROFILE:
-${data.profile}
+COMPANY: ${data.companySummary}
+FINANCIALS: ${data.financialSummary}
+NEWS: ${data.newsSummary}
+WEB: ${data.webSummary}
+COMPETITORS: ${data.competitors}
 
-FINANCIAL DATA:
-${data.financials}
+Provide 3-5 specific, evidence-based items per category.
 
-RECENT NEWS:
-${data.news}
-
-WEB RESEARCH INSIGHTS:
-${data.webInsights}
-
-COMPETITORS:
-${data.competitors}
-
-Generate a SWOT analysis with 4-6 items per category. Be specific and evidence-based.
-
-Return this exact JSON structure:
-{
-  "strengths": ["string", ...],
-  "weaknesses": ["string", ...],
-  "opportunities": ["string", ...],
-  "threats": ["string", ...]
-}
+Return JSON: {"strengths":["string"],"weaknesses":["string"],"opportunities":["string"],"threats":["string"]}
 ${JSON_FORMAT_REMINDER}`;
 }
