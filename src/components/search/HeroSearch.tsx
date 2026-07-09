@@ -152,65 +152,63 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
         </form>
       </section>
 
-      {/* ── SECTION 3: TRUSTED TECHNOLOGIES ── */}
+      {/* ── SECTION 6: EXAMPLE COMPANIES (Moved Immediately Below Hero) ── */}
       <section
-        id="technology"
+        id="about"
         style={{
           borderTop: '1px solid var(--border)',
           borderBottom: '1px solid var(--border)',
           background: 'var(--bg-surface)',
-          padding: '24px 24px',
+          padding: '64px 24px',
         }}
       >
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <p
-            style={{
-              fontSize: '10px',
-              color: 'var(--text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.08em',
-              fontWeight: 600,
-              marginBottom: '16px',
-            }}
-          >
-            INTEGRATED SYSTEM PROVIDERS & PLATFORMS
-          </p>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>Select Preset Company Symbol</h2>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Click any company card below to run a standard research agent run immediately.</p>
+          </div>
+
           <div
             style={{
-              display: 'flex',
-              flexWrap: 'wrap',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
               gap: '12px',
-              justifyContent: 'center',
-              alignItems: 'center',
             }}
           >
-            {[
-              { name: 'Yahoo Finance', icon: <Database size={12} /> },
-              { name: 'Gemini', icon: <Cpu size={12} /> },
-              { name: 'LangGraph', icon: <Network size={12} /> },
-              { name: 'NewsAPI', icon: <FileText size={12} /> },
-              { name: 'Tavily', icon: <SearchCode size={12} /> },
-              { name: 'Next.js', icon: <Globe2 size={12} /> },
-              { name: 'TypeScript', icon: <Code2 size={12} /> },
-            ].map((tech) => (
-              <div
-                key={tech.name}
+            {EXAMPLE_COMPANIES.map((c) => (
+              <button
+                key={c.symbol}
+                onClick={() => handleChip(c.name)}
                 style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  padding: '5px 12px',
-                  borderRadius: '4px',
-                  border: '1px solid var(--border)',
+                  textAlign: 'left',
+                  padding: '16px',
+                  borderRadius: '6px',
                   background: 'var(--bg-card)',
-                  color: 'var(--text-secondary)',
-                  fontSize: '12px',
-                  fontWeight: 500,
+                  border: '1px solid var(--border)',
+                  cursor: 'pointer',
+                  transition: 'all 0.12s ease',
+                }}
+                onMouseEnter={(e) => {
+                  const target = e.currentTarget;
+                  target.style.borderColor = 'var(--border-hover)';
+                  target.style.backgroundColor = 'var(--bg-card-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  const target = e.currentTarget;
+                  target.style.borderColor = 'var(--border)';
+                  target.style.backgroundColor = 'var(--bg-card)';
                 }}
               >
-                {tech.icon}
-                <span>{tech.name}</span>
-              </div>
+                <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>
+                  {c.symbol}
+                </div>
+                <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
+                  {c.name}
+                </div>
+                <div style={{ marginTop: '12px', fontSize: '10px', color: 'var(--brand-light)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, textTransform: 'uppercase' }}>
+                  Run Agent <ArrowRight size={10} />
+                </div>
+              </button>
             ))}
           </div>
         </div>
@@ -340,7 +338,7 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
               { num: '04', title: 'AI Research', desc: 'Processes parallel evaluation nodes assessing growth prospects, systematic risk, and SWOT matrices.' },
               { num: '05', title: 'Investment Recommendation', desc: 'Synthesizes metrics, confidence scores, and outputs a clear action plan.' },
               { num: '06', title: 'Interactive Dashboard', desc: 'Renders the report instantly with full layout charting and quick markdown export capability.' },
-            ].map((step, i) => (
+            ].map((step) => (
               <div
                 key={step.num}
                 style={{
@@ -381,63 +379,66 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
         </div>
       </section>
 
-      {/* ── SECTION 6: EXAMPLE COMPANIES ── */}
+      {/* ── SECTION 3: TRUSTED TECHNOLOGIES (Moved To Bottom) ── */}
       <section
-        id="about"
+        id="technology"
         style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: '80px 24px',
           borderTop: '1px solid var(--border)',
+          background: 'var(--bg-surface)',
+          padding: '64px 24px',
         }}
       >
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>Select Preset Company Symbol</h2>
-          <p style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Click any company card below to run a standard research agent run immediately.</p>
-        </div>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: '12px',
-          }}
-        >
-          {EXAMPLE_COMPANIES.map((c) => (
-            <button
-              key={c.symbol}
-              onClick={() => handleChip(c.name)}
-              style={{
-                textAlign: 'left',
-                padding: '16px',
-                borderRadius: '6px',
-                background: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                cursor: 'pointer',
-                transition: 'all 0.12s ease',
-              }}
-              onMouseEnter={(e) => {
-                const target = e.currentTarget;
-                target.style.borderColor = 'var(--border-hover)';
-                target.style.backgroundColor = 'var(--bg-card-hover)';
-              }}
-              onMouseLeave={(e) => {
-                const target = e.currentTarget;
-                target.style.borderColor = 'var(--border)';
-                target.style.backgroundColor = 'var(--bg-card)';
-              }}
-            >
-              <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px', fontFamily: 'var(--font-mono)' }}>
-                {c.symbol}
+        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
+          <p
+            style={{
+              fontSize: '10px',
+              color: 'var(--text-muted)',
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              fontWeight: 600,
+              marginBottom: '16px',
+            }}
+          >
+            INTEGRATED SYSTEM PROVIDERS & PLATFORMS
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '12px',
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            {[
+              { name: 'Yahoo Finance', icon: <Database size={12} /> },
+              { name: 'Gemini', icon: <Cpu size={12} /> },
+              { name: 'LangGraph', icon: <Network size={12} /> },
+              { name: 'NewsAPI', icon: <FileText size={12} /> },
+              { name: 'Tavily', icon: <SearchCode size={12} /> },
+              { name: 'Next.js', icon: <Globe2 size={12} /> },
+              { name: 'TypeScript', icon: <Code2 size={12} /> },
+            ].map((tech) => (
+              <div
+                key={tech.name}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '5px 12px',
+                  borderRadius: '4px',
+                  border: '1px solid var(--border)',
+                  background: 'var(--bg-card)',
+                  color: 'var(--text-secondary)',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                }}
+              >
+                {tech.icon}
+                <span>{tech.name}</span>
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>
-                {c.name}
-              </div>
-              <div style={{ marginTop: '12px', fontSize: '10px', color: 'var(--brand-light)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, textTransform: 'uppercase' }}>
-                Run Agent <ArrowRight size={10} />
-              </div>
-            </button>
-          ))}
+            ))}
+          </div>
         </div>
       </section>
 
