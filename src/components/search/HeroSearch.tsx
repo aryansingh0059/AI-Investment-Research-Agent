@@ -107,7 +107,8 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
               borderRadius: '8px',
               border: `1px solid ${focused ? 'var(--border-active)' : 'var(--border)'}`,
               background: 'var(--bg-card)',
-              transition: 'border-color 0.15s ease',
+              transition: 'border-color 0.15s ease, box-shadow 0.15s ease',
+              boxShadow: focused ? '0 0 0 2px rgba(59, 130, 246, 0.15)' : 'none',
               padding: '6px',
             }}
           >
@@ -145,6 +146,27 @@ export default function HeroSearch({ onAnalyze }: HeroSearchProps) {
               autoComplete="off"
               spellCheck={false}
             />
+            {value && (
+              <button
+                type="button"
+                onClick={() => {
+                  setValue('');
+                  inputRef.current?.focus();
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  padding: '0 8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  outline: 'none',
+                }}
+              >
+                ✕
+              </button>
+            )}
             <button
               type="submit"
               disabled={!value.trim()}

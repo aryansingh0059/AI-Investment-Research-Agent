@@ -1,17 +1,25 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import type { GraphState } from '@/lib/langgraph/state';
 import { 
-  Clock, Download, RefreshCw, TrendingUp, TrendingDown, Send, Sparkles, 
+  Clock, Download, RefreshCw, Send, Sparkles, 
   ShieldAlert, DollarSign, Award, Activity, CheckSquare, MessageSquare, 
-  ExternalLink, BarChart3, LineChart, PieChart, Info, BookOpen
+  ExternalLink, LineChart, BookOpen, Info
 } from 'lucide-react';
 import { exportToPDF, exportToMarkdown } from '@/lib/utils/export';
-import { formatCurrency, formatPercent } from '@/lib/utils/formatters';
 
-// CSS styles to insert inside a <style> block for tooltips and hover animations
+// Custom CSS styles for Sparkline animations and CSS Tooltips
 const CHART_STYLES = `
+  @keyframes draw-sparkline {
+    to { stroke-dashoffset: 0; }
+  }
+  .sparkline-path {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: draw-sparkline 1.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
   .chart-tooltip {
     opacity: 0;
     transition: opacity 0.15s ease;
@@ -36,6 +44,40 @@ const CHART_STYLES = `
   .timeline-item:last-child::after {
     display: none;
   }
+
+  /* CSS Tooltip styles */
+  .tooltip-trigger {
+    position: relative;
+    cursor: help;
+    display: inline-flex;
+    align-items: center;
+  }
+  .tooltip-content {
+    visibility: hidden;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 400;
+    text-transform: none;
+    line-height: 1.4;
+    white-space: normal;
+    width: 180px;
+    box-shadow: var(--shadow-lg);
+    z-index: 100;
+    opacity: 0;
+    transition: opacity 150ms ease, visibility 150ms ease;
+  }
+  .tooltip-trigger:hover .tooltip-content {
+    visibility: visible;
+    opacity: 1;
+  }
 `;
 
 interface ResultsDashboardProps {
@@ -52,6 +94,42 @@ function formatLargeNumber(v: number | undefined): string {
   if (Math.abs(v) >= 1e9) return `${(v / 1e9).toFixed(2)}B`;
   if (Math.abs(v) >= 1e6) return `${(v / 1e6).toFixed(2)}M`;
   return v.toLocaleString();
+}
+
+// ─── Custom Animated Number Hook ───────────────────────────────────────────
+function AnimatedNumber({ value, suffix = '', formatter }: { value: number; suffix?: string; formatter?: (v: number) => string }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    if (!value || isNaN(value)) {
+      setDisplayValue(0);
+      return;
+    }
+    const start = 0;
+    const end = value;
+    const duration = 800;
+    const startTime = Date.now();
+
+    const timer = setInterval(() => {
+      const timePassed = Date.now() - startTime;
+      const progress = Math.min(timePassed / duration, 1);
+      const easeProgress = progress * (2 - progress); // Ease out quad
+      setDisplayValue(Math.round(easeProgress * end));
+
+      if (progress === 1) {
+        clearInterval(timer);
+      }
+    }, 16);
+
+    return () => clearInterval(timer);
+  }, [value]);
+
+  return (
+    <>
+      {formatter ? formatter(displayValue) : displayValue.toLocaleString()}
+      {suffix}
+    </>
+  );
 }
 
 // ─── SVG Trend Chart Component (Section 3) ──────────────────────────────────
@@ -140,8 +218,8 @@ function MiniChart({ title, data, years, formatType, color }: MiniChartProps) {
           {/* Area Fill */}
           {areaD && <path d={areaD} fill={`url(#grad-${title.replace(/[^a-zA-Z]/g, '')})`} />}
 
-          {/* Sparkline Path */}
-          {pathD && <path d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
+          {/* Sparkline Path (with draw-in SVG animation) */}
+          {pathD && <path className="sparkline-path" d={pathD} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />}
 
           {/* Interactive dots with Tooltips */}
           {points.map((p, idx) => (
@@ -199,7 +277,6 @@ export default function ResultsDashboard({
   // Extract variables
   const profile = result.companyProfile;
   const metrics = result.financialData?.metrics;
-  const isOk = result.recommendation != null;
 
   // Formatted headers
   const displayPrice = profile?.currentPrice ? `$${profile.currentPrice.toFixed(2)}` : 'N/A';
@@ -294,13 +371,11 @@ export default function ResultsDashboard({
     const text = result.reasoning ?? '';
     const items = text.split('\n').map(l => l.replace(/^[-*•\d\.]\s*/, '').trim()).filter(Boolean);
     
-    // Grouping
     const keyReasons = items.slice(0, 4);
     const growthDrivers = result.growthFactors.map(g => `${g.category} (Impact: ${g.impact}): ${g.description}`).slice(0, 3);
     const majorRisks = result.risks.map(r => `${r.category} (Level: ${r.level}): ${r.description}`).slice(0, 3);
     const longTermOutlook = items.slice(Math.max(0, items.length - 3));
 
-    // Fallback if empty
     if (keyReasons.length === 0) {
       keyReasons.push('Strong balance sheet fundamentals', 'Significant valuation margin of safety', 'Pioneering technology advantage');
     }
@@ -323,6 +398,8 @@ export default function ResultsDashboard({
         padding: '24px 24px 48px',
       }}
     >
+      <style>{CHART_STYLES}</style>
+      
       {/* ─── TITLE & CONTROL BAR ────────────────────────────────────────────── */}
       <div
         style={{
@@ -369,7 +446,10 @@ export default function ResultsDashboard({
         }}
       >
         {/* ─── TOP BAR (Section 0) ────────────────────────────────────────────── */}
-        <section
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.05 }}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -380,19 +460,47 @@ export default function ResultsDashboard({
             background: 'var(--bg-surface)',
             border: '1px solid var(--border)',
             borderRadius: '6px',
+            position: 'sticky',
+            top: '56px',
+            zIndex: 10,
+            boxShadow: 'var(--shadow-md)',
           }}
         >
           {/* Left: Logo & Core details */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-            <img
-              src="/logo2.png"
-              alt="Logo"
-              style={{
-                height: '32px',
-                width: 'auto',
-                display: 'block',
-              }}
-            />
+            {profile?.logo ? (
+              <img
+                src={profile.logo}
+                alt={`${profile.name || 'Company'} logo`}
+                style={{
+                  height: '32px',
+                  width: 'auto',
+                  borderRadius: '4px',
+                  objectFit: 'contain',
+                  background: 'white',
+                  padding: '2px',
+                  display: 'block',
+                }}
+              />
+            ) : (
+              <div
+                style={{
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '4px',
+                  background: 'var(--brand)',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '14px',
+                  fontFamily: 'var(--font-sans)',
+                }}
+              >
+                {(profile?.name || company).charAt(0).toUpperCase()}
+              </div>
+            )}
             <div style={{ width: '1px', height: '28px', background: 'var(--border)' }} />
             <div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
@@ -439,20 +547,27 @@ export default function ResultsDashboard({
             <div>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Confidence</div>
               <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--brand-light)', fontFamily: 'var(--font-mono)' }}>
-                {result.scores?.confidence ?? 60}%
+                <AnimatedNumber value={result.scores?.confidence ?? 60} suffix="%" />
               </div>
             </div>
             <div>
               <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Investment Score</div>
               <div style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
-                {result.scores?.investment ?? 50}<span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/100</span>
+                <AnimatedNumber value={result.scores?.investment ?? 50} />
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/100</span>
               </div>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ─── SECTION 1: EXECUTIVE SUMMARY ──────────────────────────────────── */}
-        <section className="card animate-fade-in" style={{ padding: '20px' }}>
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          className="card animate-fade-in"
+          style={{ padding: '20px' }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <Sparkles size={16} color="var(--brand-light)" />
             <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -473,10 +588,16 @@ export default function ResultsDashboard({
           >
             {result.summary || 'Summary currently unavailable. Click another company to compile analytics.'}
           </p>
-        </section>
+        </motion.section>
 
         {/* ─── SECTION 2: FINANCIAL OVERVIEW ─────────────────────────────────── */}
-        <section className="card" style={{ padding: '20px' }}>
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
+          className="card"
+          style={{ padding: '20px' }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <DollarSign size={16} color="var(--brand-light)" />
             <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -492,18 +613,18 @@ export default function ResultsDashboard({
             }}
           >
             {[
-              { label: 'Revenue (LTM)', val: formatLargeNumber(isChronological[isChronological.length - 1]?.revenue) },
-              { label: 'Net Income', val: formatLargeNumber(isChronological[isChronological.length - 1]?.netIncome) },
-              { label: 'EPS (LTM)', val: isChronological[isChronological.length - 1]?.eps ? `$${isChronological[isChronological.length - 1].eps.toFixed(2)}` : 'N/A' },
-              { label: 'Cash & Cash Equiv', val: formatLargeNumber(balanceSheetsReversed[balanceSheetsReversed.length - 1]?.cash) },
-              { label: 'Total Debt', val: formatLargeNumber(balanceSheetsReversed[balanceSheetsReversed.length - 1]?.totalDebt) },
-              { label: 'Free Cash Flow', val: formatLargeNumber(cashFlowsReversed[cashFlowsReversed.length - 1]?.freeCashFlow) },
-              { label: 'Market Cap', val: displayMarketCap },
-              { label: 'PE Ratio', val: metrics?.peRatio ? metrics.peRatio.toFixed(2) : 'N/A' },
-              { label: 'ROE', val: metrics?.roe ? `${(metrics.roe * 100).toFixed(1)}%` : 'N/A' },
-              { label: 'ROA', val: metrics?.roa ? `${(metrics.roa * 100).toFixed(1)}%` : 'N/A' },
-              { label: 'Current Ratio', val: metrics?.currentRatio ? `${metrics.currentRatio.toFixed(2)}x` : 'N/A' },
-              { label: 'Dividend Yield', val: metrics?.dividendYield != null ? `${(metrics.dividendYield * 100).toFixed(2)}%` : 'N/A' },
+              { label: 'Revenue (LTM)', val: formatLargeNumber(isChronological[isChronological.length - 1]?.revenue), tooltip: 'Total amount of money brought in by a company sales.' },
+              { label: 'Net Income', val: formatLargeNumber(isChronological[isChronological.length - 1]?.netIncome), tooltip: 'Company net profit after deducting all business expenses.' },
+              { label: 'EPS (LTM)', val: isChronological[isChronological.length - 1]?.eps ? `$${isChronological[isChronological.length - 1].eps.toFixed(2)}` : 'N/A', tooltip: 'Earnings Per Share - portion of profit allocated to each outstanding share.' },
+              { label: 'Cash & Cash Equiv', val: formatLargeNumber(balanceSheetsReversed[balanceSheetsReversed.length - 1]?.cash), tooltip: 'Total highly liquid cash reserves held on the balance sheet.' },
+              { label: 'Total Debt', val: formatLargeNumber(balanceSheetsReversed[balanceSheetsReversed.length - 1]?.totalDebt), tooltip: 'Total liabilities representing borrowed capital.' },
+              { label: 'Free Cash Flow', val: formatLargeNumber(cashFlowsReversed[cashFlowsReversed.length - 1]?.freeCashFlow), tooltip: 'Free Cash Flow - cash generated after capital expenditure requirements.' },
+              { label: 'Market Cap', val: displayMarketCap, tooltip: 'Total market value of all outstanding shares.' },
+              { label: 'PE Ratio', val: metrics?.peRatio ? metrics.peRatio.toFixed(2) : 'N/A', tooltip: 'Price-to-Earnings - evaluates current share price relative to earnings.' },
+              { label: 'ROE', val: metrics?.roe ? `${(metrics.roe * 100).toFixed(1)}%` : 'N/A', tooltip: 'Return on Equity - measures profitability relative to shareholder equity.' },
+              { label: 'ROA', val: metrics?.roa ? `${(metrics.roa * 100).toFixed(1)}%` : 'N/A', tooltip: 'Return on Assets - measures profitability relative to total assets.' },
+              { label: 'Current Ratio', val: metrics?.currentRatio ? `${metrics.currentRatio.toFixed(2)}x` : 'N/A', tooltip: 'Measures ability to cover short-term debts with current assets.' },
+              { label: 'Dividend Yield', val: metrics?.dividendYield != null ? `${(metrics.dividendYield * 100).toFixed(2)}%` : 'N/A', tooltip: 'Percentage return paid in annual dividends relative to share price.' },
             ].map((card, idx) => (
               <div
                 key={idx}
@@ -514,8 +635,14 @@ export default function ResultsDashboard({
                   padding: '10px 14px',
                 }}
               >
-                <div style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>
-                  {card.label}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '10px', color: 'var(--text-muted)', textTransform: 'uppercase' }}>
+                    {card.label}
+                  </span>
+                  <div className="tooltip-trigger">
+                    <Info size={11} color="var(--text-muted)" style={{ cursor: 'help' }} />
+                    <div className="tooltip-content">{card.tooltip}</div>
+                  </div>
                 </div>
                 <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)', fontFamily: 'var(--font-mono)' }}>
                   {card.val}
@@ -523,10 +650,16 @@ export default function ResultsDashboard({
               </div>
             ))}
           </div>
-        </section>
+        </motion.section>
 
         {/* ─── SECTION 3: TREND CHARTS ────────────────────────────────────────── */}
-        <section className="card" style={{ padding: '20px' }}>
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+          className="card"
+          style={{ padding: '20px' }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <LineChart size={16} color="var(--brand-light)" />
             <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -548,12 +681,18 @@ export default function ResultsDashboard({
             <MiniChart title="Debt Trend" data={debtData} years={years} formatType="currency" color="#EF4444" />
             <MiniChart title="YoY Revenue Growth" data={growthData} years={years} formatType="percent" color="#F59E0B" />
           </div>
-        </section>
+        </motion.section>
 
         {/* ─── NEWS & SWOT ROW ────────────────────────────────────────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '24px' }}>
           {/* SECTION 4: LATEST NEWS */}
-          <section className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
+            className="card"
+            style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
               <BookOpen size={16} color="var(--brand-light)" />
               <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -640,10 +779,16 @@ export default function ResultsDashboard({
                 );
               })}
             </div>
-          </section>
+          </motion.section>
 
           {/* SECTION 5: SWOT ANALYSIS */}
-          <section className="card" style={{ padding: '20px' }}>
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.28 }}
+            className="card"
+            style={{ padding: '20px' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
               <Award size={16} color="var(--brand-light)" />
               <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -702,11 +847,17 @@ export default function ResultsDashboard({
                 );
               })}
             </div>
-          </section>
+          </motion.section>
         </div>
 
         {/* ─── SECTION 6: RISK ANALYSIS ──────────────────────────────────────── */}
-        <section className="card" style={{ padding: '20px' }}>
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+          className="card"
+          style={{ padding: '20px' }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
             <ShieldAlert size={16} color="var(--brand-light)" />
             <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -722,7 +873,6 @@ export default function ResultsDashboard({
               { category: 'Regulatory Risk', defaultLevel: 'medium', defaultDesc: 'Local trade policies and tax legislation continue to watch.' },
               { category: 'Market Risk', defaultLevel: 'low', defaultDesc: 'Secular trends protect the base product from sudden declines.' },
             ].map((defaultRisk) => {
-              // Find matching risk category from AI results
               const match = result.risks.find((r) => r.category.toLowerCase().includes(defaultRisk.category.toLowerCase().split(' ')[0]));
               const level = match?.level || defaultRisk.defaultLevel;
               const desc = match?.description || defaultRisk.defaultDesc;
@@ -768,12 +918,18 @@ export default function ResultsDashboard({
               );
             })}
           </div>
-        </section>
+        </motion.section>
 
         {/* ─── COMPETITORS & RECOMMENDATION SCORE PANEL ───────────────────────── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '24px' }}>
           {/* SECTION 7: COMPETITORS TABLE */}
-          <section className="card" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
+            className="card"
+            style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
               <Activity size={16} color="var(--brand-light)" />
               <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -798,14 +954,14 @@ export default function ResultsDashboard({
                       const peerColor = peerRec === 'BUY' ? 'var(--success)' : peerRec === 'SELL' ? 'var(--danger)' : 'var(--warning)';
 
                       return (
-                        <tr key={comp.symbol} style={{ borderBottom: '1px solid var(--border)' }}>
-                          <td style={{ padding: '10px 4px', fontWeight: 600 }}>
+                        <tr className="table-tr" key={comp.symbol} style={{ borderBottom: '1px solid var(--border)' }}>
+                          <td className="table-td" style={{ padding: '10px 4px', fontWeight: 600 }}>
                             <span style={{ color: 'var(--text-primary)' }}>{comp.name || comp.symbol}</span>{' '}
                             <span style={{ color: 'var(--text-muted)', fontSize: '10px', fontFamily: 'var(--font-mono)' }}>({comp.symbol})</span>
                           </td>
-                          <td style={{ padding: '10px 4px', fontFamily: 'var(--font-mono)' }}>{formatLargeNumber(comp.marketCap)}</td>
-                          <td style={{ padding: '10px 4px', fontFamily: 'var(--font-mono)' }}>{comp.peRatio ? comp.peRatio.toFixed(1) : 'N/A'}</td>
-                          <td style={{ padding: '10px 4px', textAlign: 'right' }}>
+                          <td className="table-td" style={{ padding: '10px 4px', fontFamily: 'var(--font-mono)' }}>{formatLargeNumber(comp.marketCap)}</td>
+                          <td className="table-td" style={{ padding: '10px 4px', fontFamily: 'var(--font-mono)' }}>{comp.peRatio ? comp.peRatio.toFixed(1) : 'N/A'}</td>
+                          <td className="table-td" style={{ padding: '10px 4px', textAlign: 'right' }}>
                             <span
                               style={{
                                 fontSize: '9px',
@@ -833,10 +989,13 @@ export default function ResultsDashboard({
                 </tbody>
               </table>
             </div>
-          </section>
+          </motion.section>
 
           {/* SECTION 8: INVESTMENT RECOMMENDATION CARD */}
-          <section
+          <motion.section
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.38 }}
             className="card"
             style={{
               padding: '24px',
@@ -864,7 +1023,8 @@ export default function ResultsDashboard({
                 <div style={{ textAlign: 'right' }}>
                   <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Rating Score</span>
                   <div style={{ fontSize: '28px', fontWeight: 800, fontFamily: 'var(--font-mono)' }}>
-                    {result.scores?.investment ?? 50}<span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>/100</span>
+                    <AnimatedNumber value={result.scores?.investment ?? 50} />
+                    <span style={{ fontSize: '14px', color: 'var(--text-muted)' }}>/100</span>
                   </div>
                 </div>
               </div>
@@ -893,11 +1053,17 @@ export default function ResultsDashboard({
             <div style={{ borderTop: '1px solid var(--border)', marginTop: '20px', paddingTop: '12px', fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
               ANALYSIS TIMESTAMP: {new Date().toLocaleString()}
             </div>
-          </section>
+          </motion.section>
         </div>
 
         {/* ─── SECTION 9: INVESTMENT THESIS ──────────────────────────────────── */}
-        <section className="card" style={{ padding: '20px' }}>
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+          className="card"
+          style={{ padding: '20px' }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '20px' }}>
             <BookOpen size={16} color="var(--brand-light)" />
             <h3 style={{ fontSize: '14px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -960,10 +1126,16 @@ export default function ResultsDashboard({
               </ul>
             </div>
           </div>
-        </section>
+        </motion.section>
 
         {/* ─── SECTION 10: ASK AI (Follow-up Assistant) ────────────────────────── */}
-        <section className="card" style={{ padding: '20px', background: 'var(--bg-surface)' }}>
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.45 }}
+          className="card"
+          style={{ padding: '20px', background: 'var(--bg-surface)' }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
             <MessageSquare size={16} color="var(--brand-light)" />
             <h3 style={{ fontSize: '13px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
@@ -1027,23 +1199,11 @@ export default function ResultsDashboard({
                 key={q}
                 onClick={() => handleAsk(q)}
                 disabled={chatLoading}
+                className="btn-secondary"
                 style={{
-                  background: 'var(--bg-base)',
-                  border: '1px solid var(--border)',
-                  color: 'var(--text-secondary)',
                   padding: '5px 10px',
                   borderRadius: '4px',
                   fontSize: '11px',
-                  cursor: 'pointer',
-                  transition: 'all 0.12s ease',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--brand-light)';
-                  e.currentTarget.style.color = 'var(--text-primary)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = 'var(--border)';
-                  e.currentTarget.style.color = 'var(--text-secondary)';
                 }}
               >
                 {q}
@@ -1068,15 +1228,10 @@ export default function ResultsDashboard({
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask follow-up questions about this company..."
               disabled={chatLoading}
+              className="input-field"
               style={{
                 flex: 1,
-                background: 'var(--bg-base)',
-                border: '1px solid var(--border)',
-                borderRadius: '4px',
-                padding: '8px 12px',
                 fontSize: '12px',
-                color: 'var(--text-primary)',
-                outline: 'none',
               }}
             />
             <button
@@ -1091,7 +1246,7 @@ export default function ResultsDashboard({
               <Send size={12} />
             </button>
           </form>
-        </section>
+        </motion.section>
       </div>
     </main>
   );

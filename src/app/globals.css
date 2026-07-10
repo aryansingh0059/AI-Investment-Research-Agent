@@ -114,12 +114,13 @@ code, pre {
   border-radius: 12px; /* XL Rounded in 8px grid context */
   padding: 24px;
   box-shadow: var(--shadow-md);
-  transition: border-color 0.15s ease, background-color 0.15s ease;
+  transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1), background-color 150ms cubic-bezier(0.4, 0, 0.2, 1), transform 150ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .card-hoverable:hover {
   border-color: var(--border-hover);
   background-color: var(--bg-card-hover);
+  transform: translateY(-2px);
 }
 
 /* Primary Button */
@@ -135,18 +136,26 @@ code, pre {
   font-weight: 500;
   padding: 8px 16px;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms ease;
+  outline: none;
 }
 .btn-primary:hover {
   background-color: var(--brand-light);
+  transform: scale(1.02);
 }
 .btn-primary:active {
   background-color: var(--brand-dark);
+  transform: scale(0.98);
+}
+.btn-primary:focus-visible {
+  outline: 2px solid var(--brand-light);
+  outline-offset: 2px;
 }
 .btn-primary:disabled {
   background-color: var(--border);
   color: var(--text-muted);
   cursor: not-allowed;
+  transform: none !important;
 }
 
 /* Secondary Button */
@@ -162,11 +171,26 @@ code, pre {
   font-weight: 500;
   padding: 8px 16px;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  transition: background-color 150ms ease, border-color 150ms ease, transform 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms ease;
+  outline: none;
 }
 .btn-secondary:hover {
   background-color: var(--bg-card-hover);
   border-color: var(--border-hover);
+  transform: scale(1.02);
+}
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+.btn-secondary:focus-visible {
+  outline: 2px solid var(--brand-light);
+  outline-offset: 2px;
+}
+.btn-secondary:disabled {
+  background-color: var(--border);
+  color: var(--text-muted);
+  cursor: not-allowed;
+  transform: none !important;
 }
 
 /* Input Fields */
@@ -179,14 +203,19 @@ code, pre {
   font-size: 14px;
   padding: 10px 14px;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms cubic-bezier(0.4, 0, 0.2, 1);
   width: 100%;
 }
 .input-field:focus {
   border-color: var(--brand-light);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
 }
 .input-field::placeholder {
   color: var(--text-muted);
+  transition: color 150ms ease;
+}
+.input-field:focus::placeholder {
+  color: var(--text-secondary);
 }
 
 /* Clean Badges (Flat, Solid Border, Muted Fills) */

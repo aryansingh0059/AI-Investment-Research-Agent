@@ -85,9 +85,9 @@ export default function Navbar({ onLogoClick, status = 'idle' }: NavbarProps) {
           >
             {[
               { label: 'Features', href: '#features' },
-              { label: 'Technology', href: '#technology' },
-              { label: 'How It Works', href: '#how-it-works' },
               { label: 'About', href: '#about' },
+              { label: 'How It Works', href: '#how-it-works' },
+              { label: 'Technology', href: '#technology' },
             ].map((link) => (
               <a
                 key={link.label}
