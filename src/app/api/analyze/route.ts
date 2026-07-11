@@ -65,6 +65,19 @@ export async function POST(req: NextRequest) {
           send(step, message, partialState);
         });
 
+        // ── Company validation failed — do not cache, do not show results ──
+        if (result.companyValid === false) {
+          const event = JSON.stringify({
+            step: 'company_not_found',
+            code: 'COMPANY_NOT_FOUND',
+            message: result.validationError ?? 'No publicly listed company was found matching your search.',
+            success: false,
+          });
+          controller.enqueue(encoder.encode(`data: ${event}\n\n`));
+          controller.close();
+          return;
+        }
+
         // Cache the result
         setCached(company, result);
 

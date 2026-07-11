@@ -27,10 +27,22 @@ async function finnhubFetch<T>(path: string): Promise<T | null> {
     }
     return (await res.json()) as T;
   } catch (err) {
+    // Re-throw network/SSL errors so callers can distinguish infrastructure
+    // failures from logical "not found" (null) results.
+    const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+    const isNetwork =
+      msg.includes('fetch failed') ||
+      msg.includes('certificate') ||
+      msg.includes('econnrefused') ||
+      msg.includes('enotfound') ||
+      msg.includes('etimedout') ||
+      msg.includes('abort');
+    if (isNetwork) throw err;
     console.error(`[Finnhub] Error fetching ${path}:`, err);
     return null;
   }
 }
+
 
 /** Fallback: resolve ticker symbol from company name via Finnhub */
 export async function resolveSymbolFallback(company: string): Promise<string | null> {

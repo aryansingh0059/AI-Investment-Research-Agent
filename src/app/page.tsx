@@ -6,6 +6,7 @@ import Navbar from '@/components/layout/Navbar';
 import HeroSearch from '@/components/search/HeroSearch';
 import LoadingScreen from '@/components/loading/LoadingScreen';
 import ResultsDashboard from '@/components/dashboard/ResultsDashboard';
+import CompanyNotFound from '@/components/search/CompanyNotFound';
 import Footer from '@/components/layout/Footer';
 import { useAnalysis } from '@/hooks/useAnalysis';
 
@@ -46,7 +47,8 @@ export default function HomePage() {
           {/* Loading */}
           {analysis.status !== 'idle' &&
             analysis.status !== 'complete' &&
-            analysis.status !== 'error' && (
+            analysis.status !== 'error' &&
+            analysis.status !== 'company_not_found' && (
               <motion.div
                 key="loading"
                 initial={{ opacity: 0, y: 15 }}
@@ -63,6 +65,25 @@ export default function HomePage() {
                   company={query}
                 />
               </motion.div>
+          )}
+
+          {/* Company Not Found */}
+          {analysis.status === 'company_not_found' && (
+            <motion.div
+              key="company_not_found"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column' }}
+            >
+              <CompanyNotFound
+                searchedQuery={query}
+                message={analysis.error ?? undefined}
+                onAnalyze={handleAnalyze}
+                onReset={handleReset}
+              />
+            </motion.div>
           )}
 
           {/* Error */}
@@ -95,6 +116,7 @@ export default function HomePage() {
               </div>
             </motion.div>
           )}
+
 
           {/* Results */}
           {analysis.status === 'complete' && analysis.result && (

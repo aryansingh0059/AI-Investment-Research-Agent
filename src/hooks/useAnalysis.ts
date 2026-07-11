@@ -105,6 +105,17 @@ export function useAnalysis() {
               return;
             }
 
+            if (event.step === 'company_not_found') {
+              clearTimer();
+              setState((prev) => ({
+                ...prev,
+                status: 'company_not_found',
+                error: event.message,
+                currentMessage: event.message,
+              }));
+              return;
+            }
+
             if (event.step === 'complete' && event.data) {
               clearTimer();
               setState((prev) => ({

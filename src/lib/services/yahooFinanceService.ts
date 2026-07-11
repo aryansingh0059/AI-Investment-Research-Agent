@@ -83,6 +83,16 @@ export async function resolveSymbol(company: string): Promise<string | null> {
     const symbol = equity?.symbol ?? null;
     return toCache(cacheKey, symbol);
   } catch (err) {
+    // Re-throw network/SSL errors so callers (e.g. companyValidatorNode)
+    // can distinguish between "not found" (null) and "network failure" (throw).
+    const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+    const isNetwork =
+      msg.includes('fetch failed') ||
+      msg.includes('certificate') ||
+      msg.includes('econnrefused') ||
+      msg.includes('enotfound') ||
+      msg.includes('etimedout');
+    if (isNetwork) throw err;
     console.error('[YahooFinance] resolveSymbol error:', err);
     return toCache(cacheKey, null);
   }
@@ -334,6 +344,90 @@ export async function getFinancialData(symbol: string): Promise<FinancialData | 
   } catch (err) {
     console.error(`[YahooFinance] getFinancialData(${symbol}) error:`, err);
     return toCache(cacheKey, null);
+  }
+}
+
+// ─── Company validation ───────────────────────────────────────────────────────
+
+export interface CompanyValidationResult {
+  valid: boolean;
+  /** Why validation failed — only set when valid === false */
+  reason?: string;
+  /** Resolved company name from Yahoo Finance */
+  name?: string;
+  /** Exchange name (e.g. "NasdaqGS", "NYSE") */
+  exchange?: string;
+  /** Yahoo Finance quoteType (e.g. "EQUITY", "ETF", "CRYPTOCURRENCY") */
+  quoteType?: string;
+}
+
+/**
+ * Validates that a resolved ticker symbol corresponds to a real, publicly listed equity.
+ *
+ * Rules:
+ *  - quoteType must be "EQUITY" (rejects ETFs, crypto, mutual funds, indices)
+ *  - shortName or longName must be present
+ *  - exchangeName must be present
+ */
+export async function validateCompany(symbol: string): Promise<CompanyValidationResult> {
+  const cacheKey = `validate:${symbol}`;
+  const cached = fromCache<CompanyValidationResult>(cacheKey);
+  if (cached !== undefined) return cached;
+
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const q: any = await yf.quote(symbol);
+
+    if (!q) {
+      return toCache(cacheKey, { valid: false, reason: 'No data returned from Yahoo Finance.' });
+    }
+
+    const quoteType: string = q.quoteType ?? '';
+    const name: string = q.shortName ?? q.longName ?? '';
+    const exchange: string = q.fullExchangeName ?? q.exchange ?? '';
+
+    if (quoteType !== 'EQUITY') {
+      return toCache(cacheKey, {
+        valid: false,
+        reason: `Security type "${quoteType || 'unknown'}" is not a publicly listed company equity.`,
+        quoteType,
+        name,
+        exchange,
+      });
+    }
+
+    if (!name) {
+      return toCache(cacheKey, {
+        valid: false,
+        reason: 'Company name could not be determined.',
+        quoteType,
+        exchange,
+      });
+    }
+
+    if (!exchange) {
+      return toCache(cacheKey, {
+        valid: false,
+        reason: 'Exchange information is missing — may not be a listed security.',
+        quoteType,
+        name,
+      });
+    }
+
+    return toCache(cacheKey, { valid: true, name, exchange, quoteType });
+  } catch (err) {
+    // Re-throw network/SSL errors so companyValidatorNode can distinguish
+    // infrastructure failures from definitive 'not found' results.
+    const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
+    const isNetwork =
+      msg.includes('fetch failed') ||
+      msg.includes('certificate') ||
+      msg.includes('econnrefused') ||
+      msg.includes('enotfound') ||
+      msg.includes('etimedout');
+    if (isNetwork) throw err;
+    console.error(`[YahooFinance] validateCompany(${symbol}) error:`, err);
+    return toCache(cacheKey, { valid: false, reason: 'Failed to fetch company data from Yahoo Finance.' });
   }
 }
 

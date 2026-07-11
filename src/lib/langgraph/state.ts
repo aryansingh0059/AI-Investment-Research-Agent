@@ -69,6 +69,16 @@ export interface GraphState {
   /** Accumulated non-fatal errors */
   errors: string[];
 
+  /**
+   * Set by companyValidatorNode (runs first).
+   * false = company not found / not a public equity → entire pipeline skips.
+   * undefined = validator hasn't run yet.
+   */
+  companyValid?: boolean;
+
+  /** Human-readable reason why companyValid is false */
+  validationError?: string;
+
   // ─── Compact summaries (used by downstream nodes to reduce token usage) ────
 
   /** Compact company + market data string for AI prompts */

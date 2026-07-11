@@ -1,8 +1,13 @@
 /**
  * LangGraph state machine for investment analysis.
- * Runs sequentially: Company → Financial → News → Web → Competitors → Risk → Growth → SWOT → Decision
+ * Runs sequentially: Validator → Company → Financial → News → Web → Competitors → Risk → Growth → SWOT → Decision
+ *
+ * IMPORTANT: companyValidatorNode runs first as a hard gate.
+ * If it sets state.companyValid = false, the entire pipeline is aborted immediately.
+ * No AI services, financial fetches, or analysis nodes are called.
  */
 import { createInitialState, type GraphState } from './state';
+import { companyValidatorNode } from './nodes/companyValidator';
 import { companyResearchNode } from './nodes/companyResearch';
 import { financialAnalysisNode } from './nodes/financialAnalysis';
 import { newsAnalysisNode } from './nodes/newsAnalysis';
@@ -19,6 +24,7 @@ export type ProgressCallback = (step: AnalysisStep, message: string, partialStat
 /**
  * Runs the full investment analysis pipeline.
  * Each node's output is merged into the shared state before the next node runs.
+ * Returns early (with companyValid = false) if company validation fails.
  */
 export async function runAnalysis(
   company: string,
@@ -35,6 +41,17 @@ export async function runAnalysis(
     state = { ...state, ...update };
   };
 
+  // ── GATE: Validate company existence before ANY analysis ─────────────────
+  emit('company_research', 'Validating company...');
+  applyUpdate(await companyValidatorNode(state));
+
+  if (!state.companyValid) {
+    // Hard stop — do not call Gemini, Groq, SWOT, risk, or decision engine
+    console.log(`[Graph] Company validation failed for "${company}" — aborting pipeline`);
+    return state;
+  }
+
+  // ── PIPELINE: Company exists — proceed with full analysis ────────────────
   emit('company_research', 'Researching company profile...');
   applyUpdate(await companyResearchNode(state));
 

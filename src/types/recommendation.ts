@@ -70,6 +70,7 @@ export type AnalysisStep =
   | 'swot_generation'
   | 'decision_engine'
   | 'complete'
+  | 'company_not_found'
   | 'error';
 
 export interface SSEEvent {
