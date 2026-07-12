@@ -602,7 +602,6 @@ export default function ResultsDashboard({
               { label: 'ROE', val: metrics?.roe ? `${(metrics.roe * 100).toFixed(1)}%` : 'N/A', tooltip: 'Return on Equity - measures profitability relative to shareholder equity.' },
               { label: 'ROA', val: metrics?.roa ? `${(metrics.roa * 100).toFixed(1)}%` : 'N/A', tooltip: 'Return on Assets - measures profitability relative to total assets.' },
               { label: 'Current Ratio', val: metrics?.currentRatio ? `${metrics.currentRatio.toFixed(2)}x` : 'N/A', tooltip: 'Measures ability to cover short-term debts with current assets.' },
-              { label: 'Dividend Yield', val: metrics?.dividendYield != null ? `${(metrics.dividendYield * 100).toFixed(2)}%` : 'N/A', tooltip: 'Percentage return paid in annual dividends relative to share price.' },
             ].map((card, idx) => (
               <div
                 key={idx}
