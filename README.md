@@ -510,7 +510,7 @@ This project is submitted as a technical assessment and is licensed under the MI
 
 * **Name**: Aryan Kumar
 * **GitHub**: [@aryansingh0059](https://github.com/aryansingh0059)
-* **LinkedIn**: [Aryan Kumar](https://linkedin.com/in/aryankumar1705) *(Placeholder)*
+* **LinkedIn**: [Aryan Kumar](https://www.linkedin.com/in/aryan-kumar1705/) *(Placeholder)*
 * **Email**: [aryankumar17055@gmail.com](mailto:aryankumar17055@gmail.com)
 
 ---
