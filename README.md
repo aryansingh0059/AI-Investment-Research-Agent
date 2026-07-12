@@ -126,7 +126,7 @@ This platform consolidates qualitative and quantitative data pipelines into a si
 
 ## 4. Demo
 
-* **Live Platform URL**: [https://equitylens-agent.vercel.app](https://equitylens-agent.vercel.app) *(Placeholder)*
+* **Live Platform URL**: [https://equitylens-agent.vercel.app](https://inside-iim-eta.vercel.app/) *(Placeholder)*
 * **GitHub Repository**: [https://github.com/aryansingh0059/AI-Investment-Research-Agent](https://github.com/aryansingh0059/AI-Investment-Research-Agent)
 
 ---
