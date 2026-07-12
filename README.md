@@ -8,6 +8,7 @@ An AI-powered equity research agent that performs comprehensive investment analy
 
 | Feature | Description |
 |---|---|
+| 🛡️ **Company Validation** | Resolves company symbol and validates ticker existence before running full analysis |
 | 🏢 **Company Research** | Full profile: logo, sector, CEO, market cap, stock price |
 | 📊 **Financial Analysis** | Revenue, net income, EPS, FCF, margins, ratios, PE, ROE — with interactive charts |
 | 📰 **News Analysis** | Latest 5–8 news articles with per-article sentiment scoring |
@@ -29,7 +30,7 @@ Browser (Next.js 15 / React / Tailwind)
         │
         │  POST /api/analyze  (SSE streaming)
         ▼
-Next.js API Route ──► LangGraph 9-Node Pipeline
+Next.js API Route ──► LangGraph 10-Node Pipeline
                             │
               ┌─────────────┼─────────────┐
               │             │             │
@@ -45,7 +46,8 @@ Next.js API Route ──► LangGraph 9-Node Pipeline
 
 ```
 START
-  ↓ companyResearch      ← Finnhub: profile + symbol resolution
+  ↓ companyValidator     ← Verify company existence and resolve symbol
+  ↓ companyResearch      ← Finnhub: profile information
   ↓ financialAnalysis    ← FMP: income stmt, balance sheet, cash flow
   ↓ newsAnalysis ──┐     ← NewsAPI: articles + lexicon sentiment
   ↓ webSearch     ─┘     ← Tavily: parallel batch searches (parallel with news)
