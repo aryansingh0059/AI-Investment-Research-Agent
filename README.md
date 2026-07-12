@@ -31,14 +31,13 @@ An institutional-grade, AI-powered Equity Research Platform that performs compre
 16. [Performance Optimizations](#16-performance-optimizations)
 17. [Security & Data Guardrails](#17-security--data-guardrails)
 18. [Testing Methodology](#18-testing-methodology)
-19. [Example Runs](#19-example-runs)
-20. [Future Improvements](#20-future-improvements)
-21. [AI Usage Disclosure](#21-ai-usage-disclosure)
-22. [AI Chat Logs](#22-ai-chat-logs)
-23. [Known Limitations](#23-known-limitations)
-24. [License](#24-license)
-25. [Author](#25-author)
-26. [Acknowledgements](#26-acknowledgements)
+19. [Future Improvements](#19-future-improvements)
+20. [AI Usage Disclosure](#20-ai-usage-disclosure)
+21. [AI Chat Logs](#21-ai-chat-logs)
+22. [Known Limitations](#22-known-limitations)
+23. [License](#23-license)
+24. [Author](#24-author)
+25. [Acknowledgements](#25-acknowledgements)
 
 ---
 
@@ -436,33 +435,11 @@ Every LLM response is wrapped in a Zod validation schema. If a response is missi
 * **Cross-Device Layout Validation**: Tested the responsive dashboard across multiple viewports (Mobile, Tablet, Desktop) to ensure the CSS grid and charts adapt correctly.
 * **Robust JSON Handling**: Tested LLM nodes with simulated malformed JSON responses to verify that the JSON cleaner parser handles syntax issues gracefully.
 
----
 
-## 19. Example Runs
-
-### Apple Inc. (AAPL)
-* **Final Recommendation**: `INVEST`
-* **Score**: `84 / 100`
-* **Analyst Reasoning Narrative**: Apple maintains a highly profitable services ecosystem that offsets hardware volatility. The company shows exceptional profitability metrics (ROE > 140%) and has a strong liquid balance sheet, making it a defensive and high-conviction investment despite hardware sales slowing in certain markets.
-
-### Microsoft Corp. (MSFT)
-* **Final Recommendation**: `INVEST`
-* **Score**: `86 / 100`
-* **Analyst Reasoning Narrative**: Microsoft is well-positioned for secular growth driven by Azure cloud services and enterprise AI integration. Strong operating margins and cash flows offset high valuation multiples, warranting a long-term investment recommendation.
-
-### Intel Corp. (INTC)
-* **Final Recommendation**: `PASS`
-* **Score**: `42 / 100`
-* **Analyst Reasoning Narrative**: Intel faces headwinds due to market share losses to AMD and NVIDIA, along with high capital expenditures related to its foundry transition. With negative year-over-year revenue growth and pressure on margins, the stock is currently rated as a PASS.
-
-### Tesla Inc. (TSLA)
-* **Final Recommendation**: `WATCH`
-* **Score**: `68 / 100`
-* **Analyst Reasoning Narrative**: Tesla continues to lead the EV space, but faces competitive pressure in global markets alongside cyclical margin compression. The premium valuation relative to traditional automotive metrics makes it a WATCH until automotive margins stabilize.
 
 ---
 
-## 20. Future Improvements
+## 19. Future Improvements
 
 * **SEC EDGAR RAG Integration**: Parse qualitative notes in 10-K/10-Q filings using vector embeddings to identify financial risks not visible in structured spreadsheets.
 * **Earnings Call Transcript Parsing**: Ingest audio/text transcripts of earnings calls to analyze executive sentiment and answer user queries.
@@ -471,7 +448,7 @@ Every LLM response is wrapped in a Zod validation schema. If a response is missi
 
 ---
 
-## 21. AI Usage Disclosure
+## 20. AI Usage Disclosure
 
 During development, AI assistants were used for:
 * **Architecture Planning**: Designing the flow of the 10-node LangGraph state machine.
@@ -483,7 +460,7 @@ During development, AI assistants were used for:
 
 ---
 
-## 22. AI Chat Logs
+## 21. AI Chat Logs
 
 Comprehensive chat logs detailing the design iterations, debugging steps, and prompt configurations are available in the repository at [docs/AI-Chats/](./docs/AI-Chats/). These logs cover:
 * Claude and ChatGPT architectural discussions
@@ -492,7 +469,7 @@ Comprehensive chat logs detailing the design iterations, debugging steps, and pr
 
 ---
 
-## 23. Known Limitations
+## 22. Known Limitations
 
 * **Free-Tier Limits**: Finnhub, Tavily, and NewsAPI keys are subject to developer-tier rate limits, which may cause rate-limit warnings under high concurrent loads.
 * **No Real-Time Intraday Feeds**: Financial metrics are based on trailing fiscal reports and daily quotes. They are not suitable for high-frequency intraday trading.
@@ -500,13 +477,13 @@ Comprehensive chat logs detailing the design iterations, debugging steps, and pr
 
 ---
 
-## 24. License
+## 23. License
 
 This project is submitted as a technical assessment and is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ---
 
-## 25. Author
+## 24. Author
 
 * **Name**: Aryan Kumar
 * **GitHub**: [@aryansingh0059](https://github.com/aryansingh0059)
@@ -515,7 +492,7 @@ This project is submitted as a technical assessment and is licensed under the MI
 
 ---
 
-## 26. Acknowledgements
+## 25. Acknowledgements
 
 We thank the developers of the following resources, which made this platform possible:
 * [Yahoo Finance](https://finance.yahoo.com) and the `yahoo-finance2` package
