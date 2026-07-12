@@ -43,8 +43,8 @@ export function exportToMarkdown(result: GraphState): void {
     profile
       ? `- **Symbol:** ${profile.symbol}
 - **Industry:** ${profile.industry ?? 'N/A'}
-- **Market Cap:** ${formatCurrency(profile.marketCap)}
-- **Stock Price:** ${profile.currentPrice ? `$${profile.currentPrice.toFixed(2)}` : 'N/A'}
+- **Market Cap:** ${formatCurrency(profile.marketCap, profile.currency)}
+- **Stock Price:** ${formatCurrency(profile.currentPrice, profile.currency, false)}
 - **Exchange:** ${profile.exchange ?? 'N/A'}
 - **Country:** ${profile.country ?? 'N/A'}`
       : '_Company profile unavailable_',

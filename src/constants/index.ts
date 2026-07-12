@@ -41,8 +41,6 @@ export const EXAMPLE_COMPANIES = [
   { name: 'Microsoft', symbol: 'MSFT' },
   { name: 'Nvidia', symbol: 'NVDA' },
   { name: 'Reliance Industries', symbol: 'RELIANCE' },
-  { name: 'TCS', symbol: 'TCS' },
-  { name: 'Infosys', symbol: 'INFY' },
 ];
 
 export const MAX_RETRIES = 2;

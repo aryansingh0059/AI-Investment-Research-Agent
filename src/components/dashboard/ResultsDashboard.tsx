@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import type { GraphState } from '@/lib/langgraph/state';
 import { 
-  Clock, Download, RefreshCw, Send, Sparkles, 
-  ShieldAlert, DollarSign, Award, Activity, CheckSquare, MessageSquare, 
+  Clock, Download, RefreshCw, Sparkles, 
+  ShieldAlert, DollarSign, Award, Activity, CheckSquare, 
   ExternalLink, LineChart, BookOpen, Info
 } from 'lucide-react';
 import { exportToPDF, exportToMarkdown } from '@/lib/utils/export';
@@ -139,9 +139,10 @@ interface MiniChartProps {
   years: string[];
   formatType: 'currency' | 'percent' | 'number' | 'eps';
   color: string;
+  currencySymbol?: string;
 }
 
-function MiniChart({ title, data, years, formatType, color }: MiniChartProps) {
+function MiniChart({ title, data, years, formatType, color, currencySymbol = '$' }: MiniChartProps) {
   if (!data || data.length === 0) {
     return (
       <div className="card" style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '160px' }}>
@@ -176,15 +177,15 @@ function MiniChart({ title, data, years, formatType, color }: MiniChartProps) {
 
   const formatVal = (v: number) => {
     if (formatType === 'currency') {
-      if (Math.abs(v) >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
-      if (Math.abs(v) >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-      return `$${v.toLocaleString()}`;
+      if (Math.abs(v) >= 1e9) return `${currencySymbol}${(v / 1e9).toFixed(1)}B`;
+      if (Math.abs(v) >= 1e6) return `${currencySymbol}${(v / 1e6).toFixed(1)}M`;
+      return `${currencySymbol}${v.toLocaleString()}`;
     }
     if (formatType === 'percent') {
       return `${(v * 100).toFixed(1)}%`;
     }
     if (formatType === 'eps') {
-      return `$${v.toFixed(2)}`;
+      return `${currencySymbol}${v.toFixed(2)}`;
     }
     return v.toLocaleString();
   };
@@ -263,23 +264,39 @@ export default function ResultsDashboard({
   elapsedMs,
   onReset,
 }: ResultsDashboardProps) {
-  // Ask AI Section States
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant'; text: string }>>([]);
-  const [input, setInput] = useState('');
-  const [chatLoading, setChatLoading] = useState(false);
-  const chatEndRef = useRef<HTMLDivElement | null>(null);
-
-  // Auto-scroll chat box
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, chatLoading]);
-
   // Extract variables
   const profile = result.companyProfile;
   const metrics = result.financialData?.metrics;
 
+  // Currency helper
+  const getCurrencySymbol = (currencyCode: string | undefined): string => {
+    const symbol = profile?.symbol || result.symbol || '';
+    const exchange = profile?.exchange || '';
+    if (
+      symbol.toUpperCase().endsWith('.NS') ||
+      symbol.toUpperCase().endsWith('.BO') ||
+      exchange.toUpperCase().includes('NSE') ||
+      exchange.toUpperCase().includes('BSE') ||
+      currencyCode?.toUpperCase() === 'INR'
+    ) {
+      return '₹';
+    }
+    if (!currencyCode) return '$';
+    switch (currencyCode.toUpperCase()) {
+      case 'USD': return '$';
+      case 'EUR': return '€';
+      case 'GBP': return '£';
+      case 'JPY': return '¥';
+      case 'CAD': return 'C$';
+      case 'AUD': return 'A$';
+      case 'CNY': return '¥';
+      default: return currencyCode + ' ';
+    }
+  };
+  const currencySymbol = getCurrencySymbol(profile?.currency);
+
   // Formatted headers
-  const displayPrice = profile?.currentPrice ? `$${profile.currentPrice.toFixed(2)}` : 'N/A';
+  const displayPrice = profile?.currentPrice ? `${currencySymbol}${profile.currentPrice.toFixed(2)}` : 'N/A';
   const displayMarketCap = formatLargeNumber(profile?.marketCap);
   const rec = result.recommendation || 'WATCH';
   const recColor = rec === 'INVEST' ? 'var(--success)' : rec === 'PASS' ? 'var(--danger)' : 'var(--warning)';
@@ -325,45 +342,6 @@ export default function ResultsDashboard({
     if (!timeStr) return '';
     const parts = timeStr.split('T');
     return parts[0] + (parts[1] ? ` ${parts[1].slice(0, 5)}` : '');
-  };
-
-  // Trigger custom Ask AI query
-  const handleAsk = async (question: string) => {
-    if (!question.trim() || chatLoading) return;
-    setMessages((prev) => [...prev, { role: 'user', text: question }]);
-    setInput('');
-    setChatLoading(true);
-
-    // Build compact context summary to supply the chat context
-    const context = `
-      Company: ${profile?.name} (${profile?.symbol})
-      Recommendation: ${rec}
-      Investment Score: ${result.scores?.investment}/100
-      Financial Health: ${result.scores?.financialHealth}/100
-      Growth Score: ${result.scores?.growthScore}/100
-      Risk Score: ${result.scores?.riskScore}/100
-      Executive Summary: ${result.summary}
-      Risks: ${result.risks.map((r) => `${r.category} (${r.level}): ${r.description}`).join('; ')}
-      Growth factors: ${result.growthFactors.map((g) => `${g.category} (Impact: ${g.impact}): ${g.description}`).join('; ')}
-    `.slice(0, 1500);
-
-    try {
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ company: profile?.name || company, context, question }),
-      });
-      const data = await res.json();
-      if (data.answer) {
-        setMessages((prev) => [...prev, { role: 'assistant', text: data.answer }]);
-      } else {
-        setMessages((prev) => [...prev, { role: 'assistant', text: 'Error: Could not retrieve answer from AI.' }]);
-      }
-    } catch {
-      setMessages((prev) => [...prev, { role: 'assistant', text: 'Connection error. Could not contact the AI.' }]);
-    } finally {
-      setChatLoading(false);
-    }
   };
 
   // Parsing bullet lists from reasoning content (Section 9)
@@ -615,7 +593,7 @@ export default function ResultsDashboard({
             {[
               { label: 'Revenue (LTM)', val: formatLargeNumber(isChronological[isChronological.length - 1]?.revenue), tooltip: 'Total amount of money brought in by a company sales.' },
               { label: 'Net Income', val: formatLargeNumber(isChronological[isChronological.length - 1]?.netIncome), tooltip: 'Company net profit after deducting all business expenses.' },
-              { label: 'EPS (LTM)', val: isChronological[isChronological.length - 1]?.eps ? `$${isChronological[isChronological.length - 1].eps.toFixed(2)}` : 'N/A', tooltip: 'Earnings Per Share - portion of profit allocated to each outstanding share.' },
+              { label: 'EPS (LTM)', val: isChronological[isChronological.length - 1]?.eps ? `${currencySymbol}${isChronological[isChronological.length - 1].eps.toFixed(2)}` : 'N/A', tooltip: 'Earnings Per Share - portion of profit allocated to each outstanding share.' },
               { label: 'Cash & Cash Equiv', val: formatLargeNumber(balanceSheetsReversed[balanceSheetsReversed.length - 1]?.cash), tooltip: 'Total highly liquid cash reserves held on the balance sheet.' },
               { label: 'Total Debt', val: formatLargeNumber(balanceSheetsReversed[balanceSheetsReversed.length - 1]?.totalDebt), tooltip: 'Total liabilities representing borrowed capital.' },
               { label: 'Free Cash Flow', val: formatLargeNumber(cashFlowsReversed[cashFlowsReversed.length - 1]?.freeCashFlow), tooltip: 'Free Cash Flow - cash generated after capital expenditure requirements.' },
@@ -674,11 +652,11 @@ export default function ResultsDashboard({
               gap: '16px',
             }}
           >
-            <MiniChart title="Revenue Trend" data={revData} years={years} formatType="currency" color="var(--brand-light)" />
-            <MiniChart title="Net Income Trend" data={netIncData} years={years} formatType="currency" color="#10B981" />
-            <MiniChart title="Cash Flow Trend (FCF)" data={fcfData} years={years} formatType="currency" color="#3B82F6" />
-            <MiniChart title="EPS Trend" data={epsData} years={years} formatType="eps" color="#8B5CF6" />
-            <MiniChart title="Debt Trend" data={debtData} years={years} formatType="currency" color="#EF4444" />
+            <MiniChart title="Revenue Trend" data={revData} years={years} formatType="currency" color="var(--brand-light)" currencySymbol={currencySymbol} />
+            <MiniChart title="Net Income Trend" data={netIncData} years={years} formatType="currency" color="#10B981" currencySymbol={currencySymbol} />
+            <MiniChart title="Cash Flow Trend (FCF)" data={fcfData} years={years} formatType="currency" color="#3B82F6" currencySymbol={currencySymbol} />
+            <MiniChart title="EPS Trend" data={epsData} years={years} formatType="eps" color="#8B5CF6" currencySymbol={currencySymbol} />
+            <MiniChart title="Debt Trend" data={debtData} years={years} formatType="currency" color="#EF4444" currencySymbol={currencySymbol} />
             <MiniChart title="YoY Revenue Growth" data={growthData} years={years} formatType="percent" color="#F59E0B" />
           </div>
         </motion.section>
@@ -1126,126 +1104,6 @@ export default function ResultsDashboard({
               </ul>
             </div>
           </div>
-        </motion.section>
-
-        {/* ─── SECTION 10: ASK AI (Follow-up Assistant) ────────────────────────── */}
-        <motion.section
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1], delay: 0.45 }}
-          className="card"
-          style={{ padding: '20px', background: 'var(--bg-surface)' }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <MessageSquare size={16} color="var(--brand-light)" />
-            <h3 style={{ fontSize: '13px', fontWeight: 600, margin: 0, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              Ask AI Follow-Up Assistant
-            </h3>
-          </div>
-
-          {/* Messages scroll-box */}
-          {messages.length > 0 && (
-            <div
-              style={{
-                background: 'var(--bg-base)',
-                border: '1px solid var(--border)',
-                borderRadius: '4px',
-                padding: '12px',
-                maxHeight: '200px',
-                overflowY: 'auto',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px',
-                marginBottom: '16px',
-              }}
-            >
-              {messages.map((m, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    alignSelf: m.role === 'user' ? 'flex-end' : 'flex-start',
-                    maxWidth: '85%',
-                    background: m.role === 'user' ? 'rgba(20,80,250,0.1)' : 'var(--bg-surface)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '6px',
-                    padding: '8px 12px',
-                    fontSize: '12px',
-                    lineHeight: '1.4',
-                  }}
-                >
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginBottom: '3px', fontWeight: 700 }}>
-                    {m.role === 'user' ? 'YOU' : 'EQUITYLENS AI'}
-                  </div>
-                  <div style={{ whiteSpace: 'pre-wrap', color: 'var(--text-primary)' }}>{m.text}</div>
-                </div>
-              ))}
-              {chatLoading && (
-                <div style={{ alignSelf: 'flex-start', fontSize: '11px', color: 'var(--text-muted)', fontFamily: 'var(--font-mono)' }}>
-                  TYPING...
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-          )}
-
-          {/* Quick-Prompt Buttons */}
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '14px' }}>
-            {[
-              'Compare with Microsoft',
-              'What are the biggest risks?',
-              'Should I invest for 10 years?',
-            ].map((q) => (
-              <button
-                key={q}
-                onClick={() => handleAsk(q)}
-                disabled={chatLoading}
-                className="btn-secondary"
-                style={{
-                  padding: '5px 10px',
-                  borderRadius: '4px',
-                  fontSize: '11px',
-                }}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-
-          {/* Custom chat prompt bar */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAsk(input);
-            }}
-            style={{
-              display: 'flex',
-              gap: '8px',
-            }}
-          >
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask follow-up questions about this company..."
-              disabled={chatLoading}
-              className="input-field"
-              style={{
-                flex: 1,
-                fontSize: '12px',
-              }}
-            />
-            <button
-              type="submit"
-              disabled={chatLoading || !input.trim()}
-              className="btn-primary"
-              style={{
-                padding: '0 14px',
-                borderRadius: '4px',
-              }}
-            >
-              <Send size={12} />
-            </button>
-          </form>
         </motion.section>
       </div>
     </main>

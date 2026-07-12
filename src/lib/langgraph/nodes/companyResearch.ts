@@ -50,22 +50,24 @@ export async function companyResearchNode(
       exchange: finnhubLogoData.exchange ?? yfProfile.exchange,
       currentPrice: yfQuote.currentPrice ?? yfProfile.currentPrice,
       marketCap: yfQuote.marketCap ?? yfProfile.marketCap,
+      currency: yfProfile.currency || (symbol.toUpperCase().endsWith('.NS') || symbol.toUpperCase().endsWith('.BO') ? 'INR' : 'USD'),
       ceo,
     };
 
     // ── Build compact companySummary for AI prompts ──────────────────────────
+    const currency = companyProfile.currency;
     const companySummary = [
       `Company: ${companyProfile.name} (${symbol})`,
       companyProfile.sector ? `Sector: ${companyProfile.sector}` : '',
       companyProfile.industry ? `Industry: ${companyProfile.industry}` : '',
-      companyProfile.currentPrice ? `Price: $${companyProfile.currentPrice.toFixed(2)}` : '',
-      companyProfile.marketCap ? `Market Cap: ${formatCurrency(companyProfile.marketCap)}` : '',
+      companyProfile.currentPrice ? `Price: ${formatCurrency(companyProfile.currentPrice, currency, false)}` : '',
+      companyProfile.marketCap ? `Market Cap: ${formatCurrency(companyProfile.marketCap, currency)}` : '',
       companyProfile.employees ? `Employees: ${companyProfile.employees.toLocaleString()}` : '',
       companyProfile.country ? `Country: ${companyProfile.country}` : '',
       yfQuote.peRatio ? `P/E: ${yfQuote.peRatio.toFixed(1)}` : '',
       yfQuote.beta ? `Beta: ${yfQuote.beta.toFixed(2)}` : '',
-      yfQuote.week52High ? `52W High: $${yfQuote.week52High.toFixed(2)}` : '',
-      yfQuote.week52Low ? `52W Low: $${yfQuote.week52Low.toFixed(2)}` : '',
+      yfQuote.week52High ? `52W High: ${formatCurrency(yfQuote.week52High, currency, false)}` : '',
+      yfQuote.week52Low ? `52W Low: ${formatCurrency(yfQuote.week52Low, currency, false)}` : '',
     ]
       .filter(Boolean)
       .join(' | ');

@@ -41,13 +41,14 @@ export async function financialAnalysisNode(
     const { latestRevenue, latestNetIncome, latestEPS, latestFreeCashFlow, totalDebt, cash } = financialData;
 
     // ── Build compact financialSummary for AI prompts ────────────────────────
+    const currency = state.companyProfile?.currency;
     const financialSummary = [
-      `Revenue: ${formatCurrency(latestRevenue)}`,
-      `Net Income: ${formatCurrency(latestNetIncome)}`,
-      `EPS: ${latestEPS != null ? `$${latestEPS.toFixed(2)}` : 'N/A'}`,
-      `Free Cash Flow: ${formatCurrency(latestFreeCashFlow)}`,
-      `Cash: ${formatCurrency(cash)}`,
-      `Total Debt: ${formatCurrency(totalDebt)}`,
+      `Revenue: ${formatCurrency(latestRevenue, currency)}`,
+      `Net Income: ${formatCurrency(latestNetIncome, currency)}`,
+      `EPS: ${latestEPS != null ? formatCurrency(latestEPS, currency, false) : 'N/A'}`,
+      `Free Cash Flow: ${formatCurrency(latestFreeCashFlow, currency)}`,
+      `Cash: ${formatCurrency(cash, currency)}`,
+      `Total Debt: ${formatCurrency(totalDebt, currency)}`,
       m.peRatio != null ? `P/E: ${m.peRatio.toFixed(1)}` : '',
       m.revenueGrowthYoy != null ? `Revenue Growth YoY: ${formatPercent(m.revenueGrowthYoy)}` : '',
       m.netMargin != null ? `Net Margin: ${formatPercent(m.netMargin)}` : '',

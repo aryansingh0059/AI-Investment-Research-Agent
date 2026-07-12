@@ -2,20 +2,36 @@
  * Utility: number formatters
  */
 
+function getCurrencySymbol(currency: string): string {
+  switch (currency.toUpperCase()) {
+    case 'INR': return '₹';
+    case 'USD': return '$';
+    case 'EUR': return '€';
+    case 'GBP': return '£';
+    case 'JPY': return '¥';
+    case 'CAD': return 'C$';
+    case 'AUD': return 'A$';
+    case 'CNY': return '¥';
+    default: return currency + ' ';
+  }
+}
+
 export function formatCurrency(
   value: number | undefined | null,
   currency = 'USD',
   compact = true
 ): string {
   if (value == null) return 'N/A';
+  const currencyCode = currency || 'USD';
   if (compact) {
-    if (Math.abs(value) >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
-    if (Math.abs(value) >= 1e9) return `$${(value / 1e9).toFixed(2)}B`;
-    if (Math.abs(value) >= 1e6) return `$${(value / 1e6).toFixed(2)}M`;
-    if (Math.abs(value) >= 1e3) return `$${(value / 1e3).toFixed(2)}K`;
-    return `$${value.toFixed(2)}`;
+    const symbol = getCurrencySymbol(currencyCode);
+    if (Math.abs(value) >= 1e12) return `${symbol}${(value / 1e12).toFixed(2)}T`;
+    if (Math.abs(value) >= 1e9) return `${symbol}${(value / 1e9).toFixed(2)}B`;
+    if (Math.abs(value) >= 1e6) return `${symbol}${(value / 1e6).toFixed(2)}M`;
+    if (Math.abs(value) >= 1e3) return `${symbol}${(value / 1e3).toFixed(2)}K`;
+    return `${symbol}${value.toFixed(2)}`;
   }
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(value);
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: currencyCode }).format(value);
 }
 
 export function formatPercent(value: number | undefined | null, decimals = 1): string {
@@ -41,8 +57,8 @@ export function formatDate(dateStr: string | undefined | null): string {
   }
 }
 
-export function formatMarketCap(value: number | undefined | null): string {
-  return formatCurrency(value, 'USD', true);
+export function formatMarketCap(value: number | undefined | null, currency = 'USD'): string {
+  return formatCurrency(value, currency, true);
 }
 
 export function scoreToColor(score: number): string {

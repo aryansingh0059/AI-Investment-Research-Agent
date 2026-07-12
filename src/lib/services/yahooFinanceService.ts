@@ -134,7 +134,7 @@ export async function getCompanyProfile(
       country: asset?.country ?? undefined,
       currentPrice: num(price?.regularMarketPrice),
       marketCap: num(price?.marketCap),
-      currency: price?.currency ?? undefined,
+      currency: price?.currency || (symbol.toUpperCase().endsWith('.NS') || symbol.toUpperCase().endsWith('.BO') ? 'INR' : 'USD'),
       exchange: price?.exchangeName ?? undefined,
     };
 
