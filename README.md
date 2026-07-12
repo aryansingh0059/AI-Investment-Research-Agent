@@ -34,10 +34,10 @@ Next.js API Route ──► LangGraph 10-Node Pipeline
                             │
               ┌─────────────┼─────────────┐
               │             │             │
-         Finnhub          FMP         NewsAPI
-         (Profile,     (Financials)  (News)
-          Metrics,
-          Peers)
+         Finnhub      Yahoo Finance   NewsAPI
+        (Peers,        (Financials,   (News)
+        Fallbacks,       Metrics)
+         Logos)
                         Tavily        Gemini
                        (Web Search)  (AI Analysis)
 ```
@@ -48,7 +48,7 @@ Next.js API Route ──► LangGraph 10-Node Pipeline
 START
   ↓ companyValidator     ← Verify company existence and resolve symbol
   ↓ companyResearch      ← Finnhub: profile information
-  ↓ financialAnalysis    ← FMP: income stmt, balance sheet, cash flow
+  ↓ financialAnalysis    ← Yahoo Finance: income stmt, balance sheet, cash flow
   ↓ newsAnalysis ──┐     ← NewsAPI: articles + lexicon sentiment
   ↓ webSearch     ─┘     ← Tavily: parallel batch searches (parallel with news)
   ↓ competitorAnalysis   ← Finnhub: peers
@@ -69,7 +69,7 @@ END
 | State Machine | LangGraph (custom `runAnalysis` pipeline) |
 | AI | Google Gemini 1.5 Flash |
 | Charts | Recharts |
-| Financial Data | Finnhub + Financial Modeling Prep |
+| Financial Data | Yahoo Finance (`yahoo-finance2`) + Finnhub |
 | News | NewsAPI |
 | Web Search | Tavily |
 | Package Manager | npm |
@@ -93,8 +93,8 @@ src/
 │   ├── loading/                  # LoadingScreen with step progress
 │   └── dashboard/                # All result cards + charts
 ├── lib/
-│   ├── langgraph/                # State machine + 9 nodes
-│   ├── services/                 # Finnhub, FMP, NewsAPI, Tavily, Gemini
+│   ├── langgraph/                # State machine + 10 nodes
+│   ├── services/                 # Finnhub, Yahoo Finance, NewsAPI, Tavily, Gemini
 │   ├── prompts/                  # AI prompt templates
 │   └── utils/                    # Formatters, cache, export
 ├── types/                        # All TypeScript interfaces
@@ -138,17 +138,16 @@ Open [http://localhost:3000](http://localhost:3000)
 
 ## 🔑 Environment Variables
 
-Copy `.env.example` to `.env.local` and fill in your API keys:
+Copy `.env.example` to `.env.local` and fill in your API keys (note that Yahoo Finance is used for financials and requires no API key):
 
 | Variable | Service | Free Tier |
 |---|---|---|
 | `FINNHUB_API_KEY` | [Finnhub](https://finnhub.io) | ✅ Yes |
-| `FMP_API_KEY` | [Financial Modeling Prep](https://financialmodelingprep.com) | ✅ Yes |
 | `NEWS_API_KEY` | [NewsAPI](https://newsapi.org) | ✅ Yes |
 | `TAVILY_API_KEY` | [Tavily](https://tavily.com) | ✅ Yes |
 | `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/app/apikey) | ✅ Yes |
 
-> **Note:** The app performs graceful degradation — if any API key is missing, that section shows an "unavailable" message while the rest of the analysis continues.
+> **Note:** The app performs graceful degradation — if any API key is missing (such as News, Tavily, or Gemini), that section shows an "unavailable" message while the rest of the analysis continues.
 
 ---
 
